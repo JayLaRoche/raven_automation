@@ -1,0 +1,120 @@
+{
+  "template_name": "OUTPUT EXAMPLE",
+  "analyzed_from": "OUTPUT EXAMPLE.pdf",
+  "page": {
+    "format": "Custom",
+    "width_mm": 297.0,
+    "height_mm": 209.9,
+    "width_pt": 842.0,
+    "height_pt": 595.0,
+    "orientation": "landscape"
+  },
+  "zones": {
+    "left_column": {
+      "x_percent": 0,
+      "y_percent": 0,
+      "width_percent": 0.1,
+      "height_percent": 100,
+      "contains": [
+        "cross_sections",
+        "spec_table"
+      ]
+    },
+    "center_column": {
+      "x_percent": 49.2,
+      "y_percent": 0,
+      "width_percent": 0.1,
+      "height_percent": 100,
+      "contains": [
+        "elevation_view",
+        "dimensions"
+      ]
+    },
+    "right_column": {
+      "x_percent": 75,
+      "y_percent": 0,
+      "width_percent": 25,
+      "height_percent": 100,
+      "contains": [
+        "title_block",
+        "metadata",
+        "icons"
+      ]
+    }
+  },
+  "visual_elements": {
+    "cross_section": {
+      "type": "technical_profile",
+      "location": "left_column_top",
+      "style": "outlined_shape"
+    },
+    "elevation": {
+      "type": "window_outline",
+      "location": "center",
+      "style": "frame_with_panels"
+    },
+    "spec_table": {
+      "type": "data_table",
+      "location": "left_column_bottom",
+      "style": "bordered_cells"
+    },
+    "title_block": {
+      "type": "header",
+      "location": "right_column_top",
+      "style": "company_branding"
+    },
+    "dimension_lines": {
+      "type": "callouts",
+      "location": "center",
+      "style": "cad_arrows"
+    }
+  },
+  "styling": {
+    "line_weights": {
+      "thick": 0.7199999690055847,
+      "medium": 0.5068367719650269,
+      "thin": 0.0
+    },
+    "colors": {
+      "primary": "black",
+      "accent": "red",
+      "fill": "lightgray"
+    },
+    "borders": {
+      "page_border": true,
+      "section_borders": true,
+      "table_borders": true
+    }
+  },
+  "text_layout": {
+    "hierarchy": {
+      "title": 17.211780548095703,
+      "heading": 15.118724822998047,
+      "body": 14.576519966125488,
+      "small": 0.898859977722168
+    },
+    "alignment": {
+      "title_block": "center",
+      "spec_table": "left",
+      "dimensions": "center"
+    }
+  },
+  "drawing_conventions": {
+    "panel_indicators": {
+      "fixed": "text_F_centered",
+      "casement": "diagonal_line_from_hinge",
+      "slider": "bidirectional_arrows",
+      "awning": "horizontal_pivot_line"
+    },
+    "dimension_style": {
+      "format": "arrows_with_text",
+      "units": "inches_and_mm",
+      "precision": 1
+    },
+    "cross_section_style": {
+      "fill": "hatched",
+      "highlight": "red_accent",
+      "labels": "mm_dimensions"
+    }
+  }
+}

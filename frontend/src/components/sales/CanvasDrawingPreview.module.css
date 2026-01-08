@@ -1,0 +1,227 @@
+/* Canvas Drawing Preview - Locked Viewport Layout */
+
+/* Main container for the canvas */
+/* Stays locked in viewport (Wayfair-style) */
+.canvasContainer {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1;
+  
+  /* Smooth scrolling behavior */
+  scroll-behavior: smooth;
+  
+  /* Firefox scrollbar styling */
+  scrollbar-color: #d1d5db transparent;
+  scrollbar-width: thin;
+}
+
+/* Custom scrollbar styling */
+.canvasContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.canvasContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.canvasContainer::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.canvasContainer::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Ensure the canvas content doesn't get clipped awkwardly */
+.canvasContent {
+  padding: 16px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border: 2px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  min-height: fit-content;
+}
+
+/* Canvas element styling */
+.canvas {
+  background-color: white;
+  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Hover effect for better visual feedback */
+.canvas:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Debug info styling */
+.debugInfo {
+  padding: 16px;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* Responsive adjustments for tablet/mobile */
+@media (max-width: 1024px) {
+  .canvasContainer {
+    margin-top: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .canvasContainer {
+    position: relative;
+    max-height: none;
+    overflow-y: visible;
+  }
+  
+  .canvasContent {
+    padding: 12px;
+  }
+}
+
+/* Animation for floating elements */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animateFadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Prevent layout shift by ensuring consistent sizing */
+.stickyWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Natural scrolling - no sticky or fixed positioning */
+/* Canvas scrolls with page content */
+@supports (display: grid) {
+  .canvasContainer {
+    position: relative;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+/* Presentation Mode - Full Screen Wrapper */
+.presentationModeWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Presentation Mode Header */
+.presentationModeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: #1f2937;
+  color: #ffffff;
+  border-bottom: 2px solid #374151;
+  flex-shrink: 0;
+}
+
+.presentationModeHeader h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.presentationModeExitBtn {
+  padding: 8px 16px;
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.presentationModeExitBtn:hover {
+  background-color: #b91c1c;
+}
+
+/* Presentation Mode Content Area */
+.presentationModeContent {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  padding: 24px;
+}
+
+/* Presentation Mode Canvas Container */
+.presentationModeCanvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: #f9fafb;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Canvas inside presentation mode */
+.presentationModeCanvas canvas {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

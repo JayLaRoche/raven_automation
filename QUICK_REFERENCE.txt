@@ -1,0 +1,177 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║         RAVEN CUSTOM GLASS - POSTGRESQL SYSTEM QUICK REFERENCE           ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+📦 SYSTEM COMPONENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ PostgreSQL 15 Database    (localhost:5432)
+✅ pgAdmin Web Interface     (http://localhost:5050)
+✅ Reference Data            (60+ records)
+✅ Data Validation System    (Auto-correction)
+✅ Database Migrations       (Alembic)
+✅ Automated Backups         (SQL + JSON)
+✅ Drawing Generation        (Professional CAD)
+
+🚀 QUICK START COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Start/Stop Database
+docker-compose up -d                    # Start PostgreSQL + pgAdmin
+docker-compose down                     # Stop containers
+docker ps                               # Check status
+
+# System Status
+cd backend
+python system_status.py                 # Complete status report
+python test_postgres_integration.py    # Test all features
+python quick_start_postgres.py         # Demo with reference data
+
+# Drawing Generation
+python generate_from_sheet.py "Sheet"  # From Google Sheets
+python test_validator.py               # Test validation
+
+# Data Management
+python backup_database.py              # Create backup
+python validate_sheet_data.py "Sheet"  # Validate data
+python database/init_db.py             # Reinitialize DB
+
+📊 REFERENCE DATA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Frame Series (5):
+  Series 80  - 80mm  - Fixed windows
+  Series 86  - 86mm  - Casements/awnings  
+  Series 90  - 90mm  - Sliders
+  Series 135 - 135mm - Patio doors
+  Series 200 - 200mm - Commercial doors
+
+Configurations (13):
+  Fixed, Single/Double Casement, Awning, Hopper, Pivot,
+  Slider 2/3/4-Panel, Bifold, Accordion, Sliding Door 2/3-Panel
+
+Glass Types (9):
+  Single Pane, Dual Pane, Low-E Dual, Low-E Triple,
+  Tempered, Laminated, Obscure, Tinted, Impact Resistant
+
+Colors (9):
+  White, Bronze, Black, Silver, Beige, Gray,
+  Dark Bronze, Champagne, Custom
+
+Hardware (24+):
+  Locks, Operators, Hinges, Handles, Track Systems
+
+🔍 DATABASE ACCESS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+pgAdmin (Web):
+  URL:      http://localhost:5050
+  Email:    admin@ravencustomglass.com
+  Password: admin2025
+
+Command Line:
+  docker exec -it raven_postgres psql -U raven_user -d raven_drawings
+
+Connection String:
+  postgresql://raven_user:<PASSWORD>@localhost:5432/raven_drawings
+  
+⚠️  Use credentials from .env file (never commit passwords to version control)
+
+🔧 COMMON SQL QUERIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- View all frame series
+SELECT series_name, frame_width_mm, nail_fin_width_mm 
+FROM frame_series ORDER BY series_code;
+
+-- Find sliders
+SELECT config_name, panel_count 
+FROM configuration_types 
+WHERE config_name LIKE '%Slider%';
+
+-- Glass options
+SELECT glass_name, u_factor, shgc 
+FROM glass_types ORDER BY u_factor;
+
+-- Hardware for casements
+SELECT hardware_name, manufacturer 
+FROM hardware_options 
+WHERE 'CS' = ANY(applicable_configs);
+
+💾 BACKUP & RESTORE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create Backup:
+  python backup_database.py
+
+Restore SQL Dump:
+  Get-Content backups\postgres_backup_TIMESTAMP.sql | 
+    docker exec -i raven_postgres psql -U raven_user -d raven_drawings
+
+View Backups:
+  ls backups/
+
+🔄 DATABASE MIGRATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create Migration:
+  alembic revision --autogenerate -m "Description"
+
+Apply Migrations:
+  alembic upgrade head
+
+Rollback:
+  alembic downgrade -1
+
+View History:
+  alembic history
+
+✅ DATA VALIDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Python Example:
+  from app.services.reference_data_validator import ReferenceDataValidator
+  
+  validator = ReferenceDataValidator(db)
+  
+  # Validate
+  is_valid, errors = validator.validate_window(window_data)
+  
+  # Auto-correct
+  corrected = validator.auto_correct(window_data)
+  
+  # Get defaults
+  defaults = validator.get_default_values('Slider 4-Panel')
+
+Command Line:
+  python test_validator.py
+  python validate_sheet_data.py "Sheet Name"
+
+🆘 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Can't connect to database:
+  docker-compose restart
+  docker logs raven_postgres
+
+Reference data missing:
+  cd backend
+  Get-Content database/init/02_seed_reference_data.sql | 
+    docker exec -i raven_postgres psql -U raven_user -d raven_drawings
+
+Reset database:
+  docker-compose down -v
+  docker-compose up -d
+  cd backend
+  python database/init_db.py
+
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+POSTGRES_MIGRATION.md       - Complete migration guide
+POSTGRES_QUICKSTART.md       - Quick start guide
+NEXT_STEPS_COMPLETE.md       - Feature implementation summary
+LAYOUT_SYSTEM_COMPLETE.md    - PDF layout learning system
+
+📞 KEY FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+backend/app/database.py                       - Database connection
+backend/app/models.py                         - Data models
+backend/app/services/reference_data_validator.py  - Validation
+backend/services/drawing_engine/main.py       - Drawing generator
+backend/database/init/02_seed_reference_data.sql  - Reference data
+docker-compose.yml                            - Container config
+
+═══════════════════════════════════════════════════════════════════════════
+System Status: ✅ OPERATIONAL | Version: 2.0 | Date: December 24, 2025
+═══════════════════════════════════════════════════════════════════════════

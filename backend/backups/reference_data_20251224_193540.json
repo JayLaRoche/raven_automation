@@ -1,0 +1,620 @@
+{
+  "frame_series": [
+    {
+      "series_name": "Series 135",
+      "series_code": "135",
+      "frame_width_mm": 135.0,
+      "sash_width_mm": 65.0,
+      "nail_fin_width_mm": 30.0,
+      "nail_fin_height_mm": 30.0,
+      "thermal_break": true,
+      "glass_pocket_depth_mm": 35.0,
+      "description": "Heavy-duty patio door frame - commercial grade"
+    },
+    {
+      "series_name": "Series 200",
+      "series_code": "200",
+      "frame_width_mm": 200.0,
+      "sash_width_mm": 80.0,
+      "nail_fin_width_mm": 40.0,
+      "nail_fin_height_mm": 40.0,
+      "thermal_break": true,
+      "glass_pocket_depth_mm": 40.0,
+      "description": "Commercial storefront door - heavy-duty"
+    },
+    {
+      "series_name": "Series 80",
+      "series_code": "80",
+      "frame_width_mm": 80.0,
+      "sash_width_mm": 40.0,
+      "nail_fin_width_mm": 30.0,
+      "nail_fin_height_mm": 30.0,
+      "thermal_break": true,
+      "glass_pocket_depth_mm": 25.0,
+      "description": "Standard fixed window frame - aluminum with thermal break"
+    },
+    {
+      "series_name": "Series 86",
+      "series_code": "86",
+      "frame_width_mm": 86.0,
+      "sash_width_mm": 48.0,
+      "nail_fin_width_mm": 30.0,
+      "nail_fin_height_mm": 30.0,
+      "thermal_break": true,
+      "glass_pocket_depth_mm": 28.0,
+      "description": "Casement/awning frame - operable windows with multi-point locks"
+    },
+    {
+      "series_name": "Series 90",
+      "series_code": "90",
+      "frame_width_mm": 90.0,
+      "sash_width_mm": 45.0,
+      "nail_fin_width_mm": 30.0,
+      "nail_fin_height_mm": 30.0,
+      "thermal_break": true,
+      "glass_pocket_depth_mm": 26.0,
+      "description": "Slider frame - horizontal sliding windows"
+    }
+  ],
+  "configuration_types": [
+    {
+      "config_name": "Accordion",
+      "config_code": "AC",
+      "panel_count": 4,
+      "operable_panels": 4,
+      "panel_indicator_style": "accordion_icon",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Multi-panel accordion/folding door"
+    },
+    {
+      "config_name": "Awning",
+      "config_code": "AW",
+      "panel_count": 1,
+      "operable_panels": 1,
+      "panel_indicator_style": "horizontal_pivot",
+      "requires_mullions": false,
+      "requires_hardware": true,
+      "description": "Top-hinged outward opening window"
+    },
+    {
+      "config_name": "Bifold",
+      "config_code": "BF",
+      "panel_count": 2,
+      "operable_panels": 2,
+      "panel_indicator_style": "bifold_icon",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Bifold door - two panels folding"
+    },
+    {
+      "config_name": "Double Casement",
+      "config_code": "DCS",
+      "panel_count": 2,
+      "operable_panels": 2,
+      "panel_indicator_style": "diagonal_line",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Two operable casement panels with center mullion"
+    },
+    {
+      "config_name": "Fixed",
+      "config_code": "FX",
+      "panel_count": 1,
+      "operable_panels": 0,
+      "panel_indicator_style": "text_F_centered",
+      "requires_mullions": false,
+      "requires_hardware": false,
+      "description": "Non-operable fixed window"
+    },
+    {
+      "config_name": "Hopper",
+      "config_code": "HP",
+      "panel_count": 1,
+      "operable_panels": 1,
+      "panel_indicator_style": "horizontal_pivot_bottom",
+      "requires_mullions": false,
+      "requires_hardware": true,
+      "description": "Bottom-hinged inward opening window"
+    },
+    {
+      "config_name": "Pivot",
+      "config_code": "PV",
+      "panel_count": 1,
+      "operable_panels": 1,
+      "panel_indicator_style": "center_pivot",
+      "requires_mullions": false,
+      "requires_hardware": true,
+      "description": "Center-pivoting window"
+    },
+    {
+      "config_name": "Single Casement",
+      "config_code": "CS",
+      "panel_count": 1,
+      "operable_panels": 1,
+      "panel_indicator_style": "diagonal_line",
+      "requires_mullions": false,
+      "requires_hardware": true,
+      "description": "Single operable casement window - left or right swing"
+    },
+    {
+      "config_name": "Slider 2-Panel",
+      "config_code": "SL2",
+      "panel_count": 2,
+      "operable_panels": 1,
+      "panel_indicator_style": "arrows",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Two-panel horizontal slider - one fixed, one operable"
+    },
+    {
+      "config_name": "Slider 3-Panel",
+      "config_code": "SL3",
+      "panel_count": 3,
+      "operable_panels": 1,
+      "panel_indicator_style": "arrows",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Three-panel slider - X-O-X configuration"
+    },
+    {
+      "config_name": "Slider 4-Panel",
+      "config_code": "SL4",
+      "panel_count": 4,
+      "operable_panels": 2,
+      "panel_indicator_style": "arrows",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Four-panel slider - X-O-O-X configuration"
+    },
+    {
+      "config_name": "Sliding Door 2-Panel",
+      "config_code": "SD2",
+      "panel_count": 2,
+      "operable_panels": 1,
+      "panel_indicator_style": "arrows",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Patio door - two panels, one operable"
+    },
+    {
+      "config_name": "Sliding Door 3-Panel",
+      "config_code": "SD3",
+      "panel_count": 3,
+      "operable_panels": 2,
+      "panel_indicator_style": "arrows",
+      "requires_mullions": true,
+      "requires_hardware": true,
+      "description": "Patio door - three panels, center operable"
+    }
+  ],
+  "glass_types": [
+    {
+      "glass_name": "Dual Pane Clear",
+      "glass_code": "DPC",
+      "thickness_mm": 25.0,
+      "u_factor": 0.48,
+      "shgc": 0.7,
+      "description": "1\" insulated unit - 2 panes clear glass with air gap"
+    },
+    {
+      "glass_name": "Impact Resistant",
+      "glass_code": "IR",
+      "thickness_mm": 9.0,
+      "u_factor": 0.55,
+      "shgc": 0.62,
+      "description": "Hurricane impact resistant - laminated dual pane"
+    },
+    {
+      "glass_name": "Laminated Safety",
+      "glass_code": "LS",
+      "thickness_mm": 6.35,
+      "u_factor": 0.9,
+      "shgc": 0.75,
+      "description": "Laminated safety glass with PVB interlayer"
+    },
+    {
+      "glass_name": "Low-E Dual Pane",
+      "glass_code": "LED",
+      "thickness_mm": 25.0,
+      "u_factor": 0.29,
+      "shgc": 0.56,
+      "description": "1\" insulated unit - Low-E coating, argon fill"
+    },
+    {
+      "glass_name": "Low-E Triple Pane",
+      "glass_code": "LET",
+      "thickness_mm": 38.0,
+      "u_factor": 0.2,
+      "shgc": 0.47,
+      "description": "1.5\" insulated unit - 3 panes with Low-E, argon fill"
+    },
+    {
+      "glass_name": "Obscure/Frosted",
+      "glass_code": "OF",
+      "thickness_mm": 6.0,
+      "u_factor": 1.04,
+      "shgc": 0.78,
+      "description": "Privacy glass - textured or frosted"
+    },
+    {
+      "glass_name": "Single Pane Clear",
+      "glass_code": "SPC",
+      "thickness_mm": 3.0,
+      "u_factor": 1.04,
+      "shgc": 0.86,
+      "description": "Single 1/8\" clear glass"
+    },
+    {
+      "glass_name": "Tempered Clear",
+      "glass_code": "TC",
+      "thickness_mm": 6.0,
+      "u_factor": 1.04,
+      "shgc": 0.84,
+      "description": "Tempered safety glass - 1/4\" thick"
+    },
+    {
+      "glass_name": "Tinted Bronze",
+      "glass_code": "TB",
+      "thickness_mm": 6.0,
+      "u_factor": 0.98,
+      "shgc": 0.64,
+      "description": "Bronze tinted glass - heat reduction"
+    }
+  ],
+  "hardware_options": [
+    {
+      "hardware_name": "Door Handle Set",
+      "hardware_type": "Handle",
+      "manufacturer": "Ashland Hardware",
+      "model_number": "DH-300",
+      "finish": "Satin Nickel",
+      "applicable_configs": [
+        "SD2",
+        "SD3"
+      ],
+      "description": "Interior/exterior patio door handle set"
+    },
+    {
+      "hardware_name": "Door Handle Set",
+      "hardware_type": "Handle",
+      "manufacturer": "Ashland Hardware",
+      "model_number": "DH-300",
+      "finish": "Satin Nickel",
+      "applicable_configs": [
+        "SD2",
+        "SD3"
+      ],
+      "description": "Interior/exterior patio door handle set"
+    },
+    {
+      "hardware_name": "Bifold Hardware Set",
+      "hardware_type": "Hardware Set",
+      "manufacturer": "Johnson Hardware",
+      "model_number": "BF-2000",
+      "finish": "Aluminum",
+      "applicable_configs": [
+        "BF"
+      ],
+      "description": "Complete bifold door hardware kit - hinges, track, handle"
+    },
+    {
+      "hardware_name": "Bifold Hardware Set",
+      "hardware_type": "Hardware Set",
+      "manufacturer": "Johnson Hardware",
+      "model_number": "BF-2000",
+      "finish": "Aluminum",
+      "applicable_configs": [
+        "BF"
+      ],
+      "description": "Complete bifold door hardware kit - hinges, track, handle"
+    },
+    {
+      "hardware_name": "Hinges - Awning",
+      "hardware_type": "Hinge",
+      "manufacturer": "Truth Hardware",
+      "model_number": "H-350",
+      "finish": "Stainless",
+      "applicable_configs": [
+        "AW",
+        "HP"
+      ],
+      "description": "Top-hung awning hinges"
+    },
+    {
+      "hardware_name": "Hinges - Awning",
+      "hardware_type": "Hinge",
+      "manufacturer": "Truth Hardware",
+      "model_number": "H-350",
+      "finish": "Stainless",
+      "applicable_configs": [
+        "AW",
+        "HP"
+      ],
+      "description": "Top-hung awning hinges"
+    },
+    {
+      "hardware_name": "Hinges - Casement",
+      "hardware_type": "Hinge",
+      "manufacturer": "Truth Hardware",
+      "model_number": "H-400",
+      "finish": "Stainless",
+      "applicable_configs": [
+        "CS",
+        "DCS",
+        "AW"
+      ],
+      "description": "Concealed casement window hinges - set of 2"
+    },
+    {
+      "hardware_name": "Hinges - Casement",
+      "hardware_type": "Hinge",
+      "manufacturer": "Truth Hardware",
+      "model_number": "H-400",
+      "finish": "Stainless",
+      "applicable_configs": [
+        "CS",
+        "DCS",
+        "AW"
+      ],
+      "description": "Concealed casement window hinges - set of 2"
+    },
+    {
+      "hardware_name": "Heavy-Duty Casement Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Truth Hardware",
+      "model_number": "T3000",
+      "finish": "Bronze",
+      "applicable_configs": [
+        "CS",
+        "DCS"
+      ],
+      "description": "Commercial grade multi-point lock"
+    },
+    {
+      "hardware_name": "Heavy-Duty Casement Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Truth Hardware",
+      "model_number": "T3000",
+      "finish": "Bronze",
+      "applicable_configs": [
+        "CS",
+        "DCS"
+      ],
+      "description": "Commercial grade multi-point lock"
+    },
+    {
+      "hardware_name": "Slider Window Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Prime-Line",
+      "model_number": "SWL-50",
+      "finish": "White",
+      "applicable_configs": [
+        "SL2",
+        "SL3",
+        "SL4"
+      ],
+      "description": "Cam-action sliding window lock"
+    },
+    {
+      "hardware_name": "Slider Window Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Prime-Line",
+      "model_number": "SWL-50",
+      "finish": "White",
+      "applicable_configs": [
+        "SL2",
+        "SL3",
+        "SL4"
+      ],
+      "description": "Cam-action sliding window lock"
+    },
+    {
+      "hardware_name": "Sliding Door Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Ashland Hardware",
+      "model_number": "SDL-100",
+      "finish": "Satin Nickel",
+      "applicable_configs": [
+        "SD2",
+        "SD3"
+      ],
+      "description": "Mortise lock for sliding patio doors"
+    },
+    {
+      "hardware_name": "Sliding Door Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Ashland Hardware",
+      "model_number": "SDL-100",
+      "finish": "Satin Nickel",
+      "applicable_configs": [
+        "SD2",
+        "SD3"
+      ],
+      "description": "Mortise lock for sliding patio doors"
+    },
+    {
+      "hardware_name": "Standard Casement Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Truth Hardware",
+      "model_number": "T2000",
+      "finish": "White",
+      "applicable_configs": [
+        "CS",
+        "DCS",
+        "AW"
+      ],
+      "description": "Multi-point casement lock with keeper"
+    },
+    {
+      "hardware_name": "Standard Casement Lock",
+      "hardware_type": "Lock",
+      "manufacturer": "Truth Hardware",
+      "model_number": "T2000",
+      "finish": "White",
+      "applicable_configs": [
+        "CS",
+        "DCS",
+        "AW"
+      ],
+      "description": "Multi-point casement lock with keeper"
+    },
+    {
+      "hardware_name": "Multipoint Lock Kit",
+      "hardware_type": "Lock Kit",
+      "manufacturer": "Truth Hardware",
+      "model_number": "MPL-500",
+      "finish": "White",
+      "applicable_configs": [
+        "CS",
+        "DCS"
+      ],
+      "description": "Complete multi-point lock system with 3 locking points"
+    },
+    {
+      "hardware_name": "Multipoint Lock Kit",
+      "hardware_type": "Lock Kit",
+      "manufacturer": "Truth Hardware",
+      "model_number": "MPL-500",
+      "finish": "White",
+      "applicable_configs": [
+        "CS",
+        "DCS"
+      ],
+      "description": "Complete multi-point lock system with 3 locking points"
+    },
+    {
+      "hardware_name": "Awning Operator",
+      "hardware_type": "Operator",
+      "manufacturer": "Truth Hardware",
+      "model_number": "AO-150",
+      "finish": "White",
+      "applicable_configs": [
+        "AW"
+      ],
+      "description": "Push-bar awning window operator"
+    },
+    {
+      "hardware_name": "Awning Operator",
+      "hardware_type": "Operator",
+      "manufacturer": "Truth Hardware",
+      "model_number": "AO-150",
+      "finish": "White",
+      "applicable_configs": [
+        "AW"
+      ],
+      "description": "Push-bar awning window operator"
+    },
+    {
+      "hardware_name": "Casement Operator",
+      "hardware_type": "Operator",
+      "manufacturer": "Truth Hardware",
+      "model_number": "CO-200",
+      "finish": "White",
+      "applicable_configs": [
+        "CS",
+        "DCS"
+      ],
+      "description": "Fold-down handle casement operator"
+    },
+    {
+      "hardware_name": "Casement Operator",
+      "hardware_type": "Operator",
+      "manufacturer": "Truth Hardware",
+      "model_number": "CO-200",
+      "finish": "White",
+      "applicable_configs": [
+        "CS",
+        "DCS"
+      ],
+      "description": "Fold-down handle casement operator"
+    },
+    {
+      "hardware_name": "Accordion Track System",
+      "hardware_type": "Track System",
+      "manufacturer": "National Guard",
+      "model_number": "AC-500",
+      "finish": "Bronze",
+      "applicable_configs": [
+        "AC"
+      ],
+      "description": "Heavy-duty accordion door track and carriers"
+    },
+    {
+      "hardware_name": "Accordion Track System",
+      "hardware_type": "Track System",
+      "manufacturer": "National Guard",
+      "model_number": "AC-500",
+      "finish": "Bronze",
+      "applicable_configs": [
+        "AC"
+      ],
+      "description": "Heavy-duty accordion door track and carriers"
+    }
+  ],
+  "frame_colors": [
+    {
+      "color_name": "Beige/Tan",
+      "color_code": "BGE",
+      "hex_value": "#D2B48C",
+      "rgb_value": "210,180,140",
+      "finish_type": "Powder Coat"
+    },
+    {
+      "color_name": "Black",
+      "color_code": "BLK",
+      "hex_value": "#000000",
+      "rgb_value": "0,0,0",
+      "finish_type": "Powder Coat"
+    },
+    {
+      "color_name": "Bronze",
+      "color_code": "BRZ",
+      "hex_value": "#614E1A",
+      "rgb_value": "97,78,26",
+      "finish_type": "Anodized"
+    },
+    {
+      "color_name": "Champagne",
+      "color_code": "CHP",
+      "hex_value": "#F7E7CE",
+      "rgb_value": "247,231,206",
+      "finish_type": "Anodized"
+    },
+    {
+      "color_name": "Custom Color",
+      "color_code": "CUS",
+      "hex_value": null,
+      "rgb_value": null,
+      "finish_type": "Custom Match"
+    },
+    {
+      "color_name": "Dark Bronze",
+      "color_code": "DBR",
+      "hex_value": "#3E2723",
+      "rgb_value": "62,39,35",
+      "finish_type": "Anodized"
+    },
+    {
+      "color_name": "Gray",
+      "color_code": "GRY",
+      "hex_value": "#808080",
+      "rgb_value": "128,128,128",
+      "finish_type": "Powder Coat"
+    },
+    {
+      "color_name": "Silver",
+      "color_code": "SLV",
+      "hex_value": "#C0C0C0",
+      "rgb_value": "192,192,192",
+      "finish_type": "Anodized"
+    },
+    {
+      "color_name": "White",
+      "color_code": "WHT",
+      "hex_value": "#FFFFFF",
+      "rgb_value": "255,255,255",
+      "finish_type": "Powder Coat"
+    }
+  ]
+}

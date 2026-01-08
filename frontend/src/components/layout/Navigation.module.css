@@ -1,0 +1,143 @@
+.navContainer {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.navContent {
+  width: 100%;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70px;
+}
+
+.logo {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.tabs {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.tab {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  background: none;
+  border: none;
+  padding: 24px 0;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.tab:hover {
+  color: #333;
+}
+
+.tab.active {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+/* Underline indicator for active tab */
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #1a1a1a;
+  border-radius: 2px 2px 0 0;
+}
+
+.indicatorLine {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #e5e5e5;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .navContent {
+    padding: 0 24px;
+    min-height: 60px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .tabs {
+    gap: 24px;
+  }
+
+  .tab {
+    font-size: 15px;
+    padding: 20px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .navContent {
+    padding: 0 16px;
+    min-height: 50px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  .tabs {
+    gap: 16px;
+  }
+
+  .tab {
+    font-size: 14px;
+    padding: 16px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .navContent {
+    padding: 0 12px;
+    flex-direction: column;
+    gap: 12px;
+    min-height: auto;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .logo {
+    font-size: 16px;
+  }
+
+  .tabs {
+    gap: 12px;
+    width: 100%;
+  }
+
+  .tab {
+    font-size: 13px;
+    padding: 12px 0;
+    flex: 1;
+    text-align: center;
+  }
+}
