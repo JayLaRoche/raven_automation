@@ -1,0 +1,66 @@
+# Render Blueprint Configuration
+# This file defines all services for automatic deployment
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: raven-db
+    env: docker
+    plan: starter
+    region: ohio
+    dockerfilePath: ./Dockerfile.postgres
+    dockerContext: .
+    envVars:
+      - key: POSTGRES_USER
+        value: raven_user
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: POSTGRES_DB
+        value: raven_shop_production
+
+  # FastAPI Backend
+  - type: web
+    name: raven-backend
+    env: docker
+    plan: starter
+    region: ohio
+    dockerfilePath: ./backend/Dockerfile.prod
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: raven-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: https://raven-shop.onrender.com
+      - key: PYTHON_ENV
+        value: production
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+    
+  # React Frontend (Static Site)
+  - type: web
+    name: raven-frontend
+    env: static
+    plan: starter
+    region: ohio
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    pullRequestPreviewsEnabled: true
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://raven-backend.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://raven-backend.onrender.com

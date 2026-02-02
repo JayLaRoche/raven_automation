@@ -31,6 +31,7 @@ except Exception as e:
 app = FastAPI(title="Raven Shop Drawings API")
 
 # CORS for React frontend
+# In production, settings.CORS_ORIGINS will be set to your Render frontend URL
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -104,6 +105,7 @@ async def health_check():
     """Health check endpoint for Docker healthcheck"""
     from datetime import datetime
     from app.database import SessionLocal
+    from sqlalchemy import text
     
     health_status = {
         "status": "healthy",
@@ -114,7 +116,7 @@ async def health_check():
     # Check database connectivity
     try:
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
         health_status["database"] = "connected"
     except Exception as e:
