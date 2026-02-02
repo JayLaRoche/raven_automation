@@ -40,11 +40,11 @@ app.add_middleware(
 )
 
 # Include routers
-# app.include_router(projects.router)
+app.include_router(projects.router)
 app.include_router(drawings.router)
 app.include_router(frames.router)
 
-# Mount static files for frame images
+# Mount static files for frame images FIRST
 static_dir = os.path.join(os.path.dirname(__file__), 'static')
 if not os.path.exists(static_dir):
     os.makedirs(static_dir)
@@ -52,7 +52,14 @@ if not os.path.exists(static_dir):
 
 if os.path.exists(static_dir):
     app.mount('/static', StaticFiles(directory=static_dir), name='static')
-    print("[OK] Static files mounted at /static")
+    print("[OK] Static files mounted at /static (includes O-Icon_library)")
+    
+    # Verify O-Icon_library exists
+    o_icon_dir = os.path.join(static_dir, 'O-Icon_library')
+    if os.path.exists(o_icon_dir):
+        print(f"[OK] O-Icon library verified at /static/O-Icon_library")
+    else:
+        print(f"[WARNING] O-Icon library not found at: {o_icon_dir}")
 
 # Mount assets directory for frame cross-section images
 assets_dir = os.path.join(os.path.dirname(__file__), 'assets')
@@ -94,7 +101,28 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    """Health check endpoint for Docker healthcheck"""
+    from datetime import datetime
+    from app.database import SessionLocal
+    
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "database": "unknown"
+    }
+    
+    # Check database connectivity
+    try:
+        db = SessionLocal()
+        db.execute("SELECT 1")
+        db.close()
+        health_status["database"] = "connected"
+    except Exception as e:
+        health_status["status"] = "degraded"
+        health_status["database"] = f"disconnected: {str(e)}"
+        logger.warning(f"Health check database error: {str(e)}")
+    
+    return health_status
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,32 +1,28 @@
-"""
-Reference Layout Shop Drawing Generator - CORRECTED
-Generates professional shop drawings matching EXACTLY Raven Custom Glass reference layout
-Output: A4 Landscape PDF (297mm x 210mm) - NOT A3!
+"""Reference Layout Shop Drawing Generator - CLIENT-SIDE CAPTURE
+Generates professional shop drawings using client-side canvas capture
+Output: A4 Landscape PDF (297mm x 210mm)
 
-CRITICAL: Analysis of reference materials shows A4 Landscape, not A3!
+This version accepts a Base64-encoded image from the frontend canvas
+and embeds it directly into a PDF, ensuring 100% match with what the user sees.
 """
 
 import io
+import base64
 import logging
-from datetime import datetime
-from typing import Dict, Optional, Any
-import tempfile
-from pathlib import Path
+from typing import Dict, Optional
 
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Circle, Wedge
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.pdfgen import canvas as rl_canvas
-from PIL import Image
+from reportlab.lib.utils import ImageReader
 
 logger = logging.getLogger(__name__)
 
 
 class ReferenceShopDrawingGenerator:
     """
-    Generate professional A4 LANDSCAPE shop drawings matching Raven reference exactly
+    Generate professional A4 LANDSCAPE shop drawings using client-side capture
     
-    Dimensions: 297mm × 210mm (A4 Landscape, NOT A3)
+    Dimensions: 297mm × 210mm (A4 Landscape)
     """
     
     def __init__(self, db_connection=None, parameters: Dict = None):
@@ -45,104 +41,75 @@ class ReferenceShopDrawingGenerator:
         self.dpi = 300
     
     def generate_pdf(self) -> io.BytesIO:
-        """Generate complete shop drawing as PDF"""
-        logger.info("Generating A4 LANDSCAPE shop drawing with params: %s", self.params)
+        """Generate PDF from client-side captured canvas image"""
+        logger.info("Generating PDF from canvas snapshot with params: %s", self.params)
         
         try:
-            # Validate required parameters
-            required_params = ['series', 'width', 'height', 'item_number']
-            for param in required_params:
-                if param not in self.params or self.params[param] is None:
-                    raise ValueError(f"Missing required parameter: {param}")
+            # Check for imageSnapshot parameter
+            image_snapshot = self.params.get('imageSnapshot')
+            if not image_snapshot:
+                raise ValueError("Missing imageSnapshot parameter - frontend must capture canvas")
             
-            # Validate numeric parameters
-            try:
-                width = float(self.params.get('width', 36))
-                height = float(self.params.get('height', 48))
-                if width <= 0 or height <= 0:
-                    raise ValueError("Width and height must be positive numbers")
-            except (TypeError, ValueError) as e:
-                raise ValueError(f"Invalid width/height values: {str(e)}")
+            # Decode Base64 image
+            # Format: "data:image/png;base64,iVBORw0KG..."
+            logger.debug("Decoding Base64 image (length: %d)", len(image_snapshot))
             
-            # Use 150 DPI for good quality at reasonable file size
-            dpi_for_generation = 150
-            
-            # Create matplotlib figure with EXACT A4 Landscape dimensions
-            fig_width_in = self.page_width_in
-            fig_height_in = self.page_height_in
-            
-            logger.debug("Creating matplotlib figure: %sx%s inches at %d DPI", 
-                        fig_width_in, fig_height_in, dpi_for_generation)
-            
-            fig = plt.figure(figsize=(fig_width_in, fig_height_in), dpi=dpi_for_generation)
-            fig.patch.set_facecolor('white')
-            fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
-            
-            # Create main axis in mm coordinates
-            ax = fig.add_axes([0, 0, 1, 1])
-            ax.set_xlim(0, self.page_width_mm)
-            ax.set_ylim(0, self.page_height_mm)
-            ax.set_aspect('equal')
-            ax.axis('off')
-            
-            # Draw entire layout
-            logger.debug("Drawing complete layout")
-            try:
-                self._draw_complete_layout(ax)
-            except Exception as draw_error:
-                logger.error("Error during drawing layout: %s", str(draw_error), exc_info=True)
-                plt.close(fig)
-                raise
-            
-            # Save matplotlib figure as PNG to temporary file
-            logger.debug("Saving figure as PNG")
-            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
-                tmp_path = tmp.name
+            if ',' in image_snapshot:
+                # Strip the data URL prefix
+                image_data_base64 = image_snapshot.split(',')[1]
+            else:
+                # Already raw Base64
+                image_data_base64 = image_snapshot
             
             try:
-                fig.savefig(tmp_path, format='png', dpi=dpi_for_generation,
-                           facecolor='white', edgecolor='none',
-                           bbox_inches='tight', pad_inches=0)
-            except Exception as save_error:
-                logger.error("Error saving figure as PNG: %s", str(save_error), exc_info=True)
-                plt.close(fig)
-                Path(tmp_path).unlink(missing_ok=True)
-                raise
-            finally:
-                plt.close(fig)
+                image_bytes = base64.b64decode(image_data_base64)
+                logger.debug("Decoded image bytes: %d", len(image_bytes))
+            except Exception as decode_error:
+                logger.error("Failed to decode Base64 image: %s", str(decode_error))
+                raise ValueError(f"Invalid Base64 image data: {str(decode_error)}")
             
-            # Load PNG and create proper A4 PDF using ReportLab
-            logger.debug("Creating PDF from PNG")
+            # Create PDF buffer
             pdf_buffer = io.BytesIO()
             page_width, page_height = landscape(A4)  # 842 x 595 points
             
-            try:
-                c = rl_canvas.Canvas(pdf_buffer, pagesize=landscape(A4))
-                
-                if not Path(tmp_path).exists():
-                    raise FileNotFoundError(f"PNG file not found: {tmp_path}")
-                
-                c.drawImage(tmp_path, 0, 0, width=page_width, height=page_height)
-                c.save()
-                pdf_buffer.seek(0)
-            except Exception as pdf_error:
-                logger.error("Error creating PDF: %s", str(pdf_error), exc_info=True)
-                raise
-            finally:
-                # Clean up temp file
-                Path(tmp_path).unlink(missing_ok=True)
+            logger.debug("Creating PDF canvas (%.1f x %.1f points)", page_width, page_height)
+            c = rl_canvas.Canvas(pdf_buffer, pagesize=landscape(A4))
             
-            # Check PDF buffer size using getvalue() instead of tell()
+            # Create ImageReader from bytes
+            try:
+                img_buffer = io.BytesIO(image_bytes)
+                img = ImageReader(img_buffer)
+                logger.debug("Image loaded successfully")
+            except Exception as img_error:
+                logger.error("Failed to load image: %s", str(img_error))
+                raise ValueError(f"Invalid image format: {str(img_error)}")
+            
+            # Draw image to fill the page (maintaining aspect ratio)
+            # A4 Landscape is 842 x 595 points
+            try:
+                c.drawImage(img, 0, 0, 
+                           width=page_width, 
+                           height=page_height, 
+                           preserveAspectRatio=True,
+                           anchor='c')  # Center anchor
+                logger.debug("Image drawn to canvas")
+            except Exception as draw_error:
+                logger.error("Failed to draw image: %s", str(draw_error))
+                raise RuntimeError(f"Failed to embed image in PDF: {str(draw_error)}")
+            
+            # Finalize PDF
+            c.save()
+            pdf_buffer.seek(0)
+            
+            # Validate PDF size
             pdf_data = pdf_buffer.getvalue()
             file_size = len(pdf_data)
             
             if file_size == 0:
                 raise RuntimeError("Generated PDF is empty")
             
-            # Create new buffer and return it
-            pdf_buffer = io.BytesIO(pdf_data)
-            logger.info("Shop drawing generated successfully (%d bytes)", file_size)
-            return pdf_buffer
+            logger.info("PDF generated successfully (%d bytes)", file_size)
+            return io.BytesIO(pdf_data)
             
         except ValueError as e:
             logger.warning("Validation error in PDF generation: %s", str(e))
@@ -150,8 +117,6 @@ class ReferenceShopDrawingGenerator:
         except Exception as e:
             logger.error("Error generating shop drawing: %s", str(e), exc_info=True)
             raise RuntimeError(f"PDF generation failed: {str(e)}")
-    
-    def _draw_complete_layout(self, ax):
         """Draw entire A4 landscape layout"""
         
         w = self.page_width_mm  # 297

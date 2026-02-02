@@ -6,6 +6,7 @@
 .env.development.local        # Development overrides
 .env.staging.local            # Staging overrides
 .env.production.local         # Production overrides
+.env.production               # Production environment (NEVER COMMIT!)
 credentials/                  # Google Sheets and API credentials
 *.key                         # SSH/encryption keys
 *.pem                         # Certificate files
@@ -98,6 +99,51 @@ logs/
 # ============================================================================
 *.tmp
 *.temp
+
+# ============================================================================
+# DOCUMENTATION CLUTTER PREVENTION
+# ============================================================================
+# Prevent accumulation of redundant/duplicate documentation files
+*_COMPLETE.md
+*_COMPLETION.md
+*_SUMMARY.md
+*_DELIVERABLES.md
+*_BEFORE_AFTER.md
+*_FIX.md
+*_VISUAL_TEST.md
+*_VERIFICATION*.md
+*_TASKS_COMPLETE.md
+COMPLETION_STATUS*.md
+COMPLETION_STATUS*.txt
+FIX_SUMMARY*.md
+FIX_SUMMARY*.txt
+CHANGES_SUMMARY*.md
+*_AUDIT_COMPLETE.md
+*_CONFIGURATION_SUMMARY.md
+
+# Exception: Keep index and reference files
+!*_INDEX.md
+!*_REFERENCE.md
+!*_QUICK_REF.md
+!*_QUICKSTART.md
+!FILE_INDEX.md
+
+# ============================================================================
+# SCRIPT TEMPORARY FILES
+# ============================================================================
+# Temporary script outputs
+organize_frame_assets_*.log
+import_frames_*.log
+cleanup_*.log
+archive_*.log
+
+# ============================================================================
+# DOCUMENTATION ARCHIVES
+# ============================================================================
+# Archive folders (reviewed before deletion)
+docs/archived/
+docs/old/
+docs/deprecated/
 *.bak
 .cache/
 .pytest_cache/
@@ -110,4 +156,15 @@ htmlcov/
 uploads/
 outputs/
 generated_files/
+
+# Docker volumes
+postgres_data_prod/
+postgres_data/
+
+# Production builds
+frontend/dist/
+backend/build/
+
+# Docker logs
+docker-compose*.override.yml
 backend/credentials/service-account.json

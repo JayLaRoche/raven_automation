@@ -3,15 +3,18 @@ Drawing generation routes
 API endpoints for generating and retrieving technical shop drawings
 """
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, Response
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import os
 import io
-from typing import List, Dict
+from typing import List, Dict, Optional
 from pydantic import BaseModel
+from datetime import datetime
+import base64
 
 from app.database import get_db
-from app.models import Project, Window, Door
+from app.models import Project, Window, Door, Unit, Drawing
 from services.google_sheets_services import get_sheets_service
 from app.services.integrated_drawing_service import get_drawing_service
 from services.reference_shop_drawing_generator import ReferenceShopDrawingGenerator
@@ -32,6 +35,7 @@ class DrawingParameters(BaseModel):
     po_number: str = ""
     notes: str = ""
     special_notes: str = ""
+    imageSnapshot: Optional[str] = None  # Base64 encoded canvas image
 
 
 @router.post("/project/{po_number}/generate")
@@ -350,3 +354,205 @@ async def generate_reference_pdf(params: DrawingParameters):
                 status_code=500,
                 detail=f"Failed to generate drawing: {error_msg}"
             )
+
+# ===========================
+# Drawing Persistence Endpoints
+# ===========================
+
+class SaveDrawingRequest(BaseModel):
+    """Request to save a drawing to the database"""
+    unitId: int
+    projectId: int
+    pdfBase64: str  # Base64 encoded PDF
+    parameters: dict  # Drawing parameters snapshot
+
+
+class SaveDrawingResponse(BaseModel):
+    """Response from saving a drawing"""
+    success: bool
+    drawingId: int
+    version: int
+    message: str
+
+
+@router.post("/save", response_model=SaveDrawingResponse)
+async def save_drawing(data: SaveDrawingRequest, db: Session = Depends(get_db)):
+    """
+    Save a generated drawing to the database.
+    Creates a new version if drawing already exists for this unit.
+    """
+    try:
+        print(f"💾 Saving drawing for unit {data.unitId}, project {data.projectId}")
+        
+        # Verify unit and project exist
+        unit = db.query(Unit).filter(Unit.id == data.unitId).first()
+        if not unit:
+            raise HTTPException(status_code=404, detail=f"Unit {data.unitId} not found")
+        
+        project = db.query(Project).filter(Project.id == data.projectId).first()
+        if not project:
+            raise HTTPException(status_code=404, detail=f"Project {data.projectId} not found")
+        
+        # Decode PDF from base64
+        pdf_blob = base64.b64decode(data.pdfBase64)
+        
+        # Check if drawing already exists for this unit
+        existing_count_query = text(
+            "SELECT COUNT(*) FROM drawings WHERE unit_id = :uid"
+        )
+        existing_count = db.execute(existing_count_query, {"uid": data.unitId}).scalar() or 0
+        
+        # If exists, mark old drawings as not current
+        if existing_count > 0:
+            update_query = text(
+                "UPDATE drawings SET is_current = 0 WHERE unit_id = :uid"
+            )
+            db.execute(update_query, {"uid": data.unitId})
+        
+        # Calculate new version number
+        new_version = existing_count + 1
+        
+        # Generate filename
+        params = data.parameters
+        filename = f"drawing_{data.projectId}_{data.unitId}_v{new_version}_{params.get('series', '')}_{params.get('width', 0)}x{params.get('height', 0)}.pdf"
+        
+        # Create new drawing record
+        insert_query = text("""
+            INSERT INTO drawings (
+                unit_id, project_id, pdf_filename, pdf_blob,
+                series, product_type, width, height, glass_type, frame_color, configuration,
+                version, is_current, created_at
+            ) VALUES (
+                :unit_id, :project_id, :pdf_filename, :pdf_blob,
+                :series, :product_type, :width, :height, :glass_type, :frame_color, :configuration,
+                :version, :is_current, :created_at
+            )
+        """)
+        
+        db.execute(insert_query, {
+            "unit_id": data.unitId,
+            "project_id": data.projectId,
+            "pdf_filename": filename,
+            "pdf_blob": pdf_blob,
+            "series": params.get('series', ''),
+            "product_type": params.get('productType', ''),
+            "width": params.get('width', 0),
+            "height": params.get('height', 0),
+            "glass_type": params.get('glassType', ''),
+            "frame_color": params.get('frameColor', ''),
+            "configuration": params.get('configuration', ''),
+            "version": new_version,
+            "is_current": 1,
+            "created_at": datetime.now()
+        })
+        db.commit()
+        
+        # Get the newly created drawing ID
+        drawing_id_query = text("SELECT last_insert_rowid()")
+        drawing_id = db.execute(drawing_id_query).scalar()
+        
+        print(f"✅ Drawing {drawing_id} saved (version {new_version})")
+        
+        return {
+            "success": True,
+            "drawingId": drawing_id,
+            "version": new_version,
+            "message": f"Drawing saved successfully (version {new_version})"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Error saving drawing:\n{error_trace}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/unit/{unit_id}/current")
+async def get_current_drawing(unit_id: int, db: Session = Depends(get_db)):
+    """Get the current (latest) drawing for a unit."""
+    try:
+        query = text("""
+            SELECT id, pdf_filename, version, created_at
+            FROM drawings
+            WHERE unit_id = :uid AND is_current = 1
+            ORDER BY version DESC
+            LIMIT 1
+        """)
+        result = db.execute(query, {"uid": unit_id}).fetchone()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail=f"No drawing found for unit {unit_id}")
+        
+        return {
+            "drawingId": result[0],
+            "filename": result[1],
+            "version": result[2],
+            "createdAt": result[3].isoformat() if result[3] else None
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error fetching drawing: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/unit/{unit_id}/versions")
+async def get_drawing_versions(unit_id: int, db: Session = Depends(get_db)):
+    """Get all drawing versions for a unit."""
+    try:
+        query = text("""
+            SELECT id, pdf_filename, version, is_current, created_at
+            FROM drawings
+            WHERE unit_id = :uid
+            ORDER BY version DESC
+        """)
+        results = db.execute(query, {"uid": unit_id}).fetchall()
+        
+        versions = []
+        for row in results:
+            versions.append({
+                "drawingId": row[0],
+                "filename": row[1],
+                "version": row[2],
+                "isCurrent": bool(row[3]),
+                "createdAt": row[4].isoformat() if row[4] else None
+            })
+        
+        return {"versions": versions}
+    
+    except Exception as e:
+        print(f"❌ Error fetching versions: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{drawing_id}/download")
+async def download_drawing(drawing_id: int, db: Session = Depends(get_db)):
+    """Download a specific drawing as PDF."""
+    try:
+        query = text("""
+            SELECT pdf_blob, pdf_filename
+            FROM drawings
+            WHERE id = :did
+        """)
+        result = db.execute(query, {"did": drawing_id}).fetchone()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail=f"Drawing {drawing_id} not found")
+        
+        pdf_blob, filename = result
+        
+        return Response(
+            content=pdf_blob,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error downloading drawing: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

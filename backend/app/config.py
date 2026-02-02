@@ -175,17 +175,18 @@ class Settings:
     def summary(cls) -> str:
         """Return a readable summary of current settings"""
         settings = cls()
+        debug_status = 'ON' if settings.DEBUG else 'OFF'
         return f"""
 ╔════════════════════════════════════════════════════════════════╗
 ║           RAVEN SHOP AUTOMATION - CONFIGURATION SUMMARY         ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ Environment:      {settings.APP_ENV.upper():40s}║
-║ Debug Mode:       {'ON' if settings.DEBUG else 'OFF':40s}║
+║ Debug Mode:       {debug_status:40s}║
 ║ Database:         {settings.DB_PROVIDER.upper():40s}║
 ║ DB Host:          {settings.DB_HOST:40s}║
-║ Backend Server:   {settings.BACKEND_HOST}:{settings.BACKEND_PORT:<37s}║
-║ CORS Origins:     {str(len(settings.CORS_ORIGINS)) + ' configured':40s}║
-║ Features:         PDF={settings.FEATURE_PDF_EXPORT} | Sheets={settings.FEATURE_GOOGLE_SHEETS_SYNC} | Frames={settings.FEATURE_FRAME_LIBRARY:<18s}║
+║ Backend Server:   {settings.BACKEND_HOST}:{settings.BACKEND_PORT}║
+║ CORS Origins:     {len(settings.CORS_ORIGINS)} configured║
+║ Features:         PDF={settings.FEATURE_PDF_EXPORT} | Sheets={settings.FEATURE_GOOGLE_SHEETS_SYNC} | Frames={settings.FEATURE_FRAME_LIBRARY}║
 ╚════════════════════════════════════════════════════════════════╝
         """
 
