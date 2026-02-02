@@ -64,3 +64,5 @@ services:
     envVars:
       - key: VITE_API_URL
         value: https://raven-backend.onrender.com
+      - key: NODE_VERSION
+        value: 20.11.0
