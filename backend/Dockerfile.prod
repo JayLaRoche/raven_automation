@@ -13,14 +13,17 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy application code (includes static files)
 COPY . .
 
-# Create data directory for SQLite fallback
-RUN mkdir -p /app/data
+# Create necessary directories
+RUN mkdir -p /app/data /app/outputs /app/logs
 
-# Expose port
+# Verify static files are present
+RUN ls -la /app/static/frames/ || echo "Warning: static/frames not found"
+
+# Expose port (Render will override with $PORT)
 EXPOSE 8000
 
 # Run migrations and start server
-CMD ["sh", "-c", "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD alembic upgrade head && python init_db.py && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}

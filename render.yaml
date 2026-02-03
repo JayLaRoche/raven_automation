@@ -1,31 +1,26 @@
 # Render Blueprint Configuration
 # This file defines all services for automatic deployment
 
-services:
-  # PostgreSQL Database
-  - type: pserv
-    name: raven-db
-    env: docker
-    plan: starter
+databases:
+  - name: raven-db
+    databaseName: raven_shop_production
+    user: raven_user
+    plan: free
     region: ohio
-    dockerfilePath: ./Dockerfile.postgres
-    dockerContext: .
-    envVars:
-      - key: POSTGRES_USER
-        value: raven_user
-      - key: POSTGRES_PASSWORD
-        generateValue: true
-      - key: POSTGRES_DB
-        value: raven_shop_production
 
+services:
   # FastAPI Backend
   - type: web
     name: raven-backend
-    env: docker
-    plan: starter
+    env: python
+    plan: free
     region: ohio
-    dockerfilePath: ./backend/Dockerfile.prod
-    dockerContext: ./backend
+    buildCommand: |
+      pip install --upgrade pip &&
+      pip install -r requirements.txt &&
+      alembic upgrade head &&
+      python init_db.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
@@ -33,23 +28,21 @@ services:
           name: raven-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: https://raven-shop.onrender.com
-      - key: PYTHON_ENV
+        value: https://raven-frontend.onrender.com
+      - key: APP_ENV
+        value: production
+      - key: ENVIRONMENT
         value: production
       - key: DEBUG
         value: false
       - key: LOG_LEVEL
         value: INFO
-      - key: SECRET_KEY
-        generateValue: true
-      - key: JWT_SECRET
-        generateValue: true
     
   # React Frontend (Static Site)
   - type: web
     name: raven-frontend
     env: static
-    plan: starter
+    plan: free
     region: ohio
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
@@ -58,6 +51,9 @@ services:
       - type: rewrite
         source: /api/*
         destination: https://raven-backend.onrender.com/api/*
+      - type: rewrite
+        source: /static/*
+        destination: https://raven-backend.onrender.com/static/*
       - type: rewrite
         source: /*
         destination: /index.html
