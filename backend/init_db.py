@@ -1,36 +1,58 @@
 #!/usr/bin/env python
 """
 Initialize database with sample frame data
+Works with both SQLite and PostgreSQL
 """
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import SessionLocal, engine, Base
+from app.database import SessionLocal, engine, Base, DATABASE_URL
 from sqlalchemy import text
 
 def init_database():
-    # Create all tables
+    # Create all tables from SQLAlchemy models
     Base.metadata.create_all(bind=engine)
     print("✅ Database tables created")
+    
+    # Detect database type
+    is_sqlite = "sqlite" in DATABASE_URL.lower()
     
     db = SessionLocal()
     
     try:
         # Create frame_cross_sections table if it doesn't exist
-        db.execute(text("""
-            CREATE TABLE IF NOT EXISTS frame_cross_sections (
-                id SERIAL PRIMARY KEY,
-                series VARCHAR(20) NOT NULL,
-                size VARCHAR(50),
-                view_type VARCHAR(50),
-                image_path VARCHAR(255),
-                width_min DECIMAL(10, 2),
-                width_max DECIMAL(10, 2),
-                height_min DECIMAL(10, 2),
-                height_max DECIMAL(10, 2)
-            )
-        """))
+        # Use compatible syntax for both SQLite and PostgreSQL
+        if is_sqlite:
+            db.execute(text("""
+                CREATE TABLE IF NOT EXISTS frame_cross_sections (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    series VARCHAR(20) NOT NULL,
+                    size VARCHAR(50),
+                    view_type VARCHAR(50),
+                    image_path VARCHAR(255),
+                    width_min DECIMAL(10, 2),
+                    width_max DECIMAL(10, 2),
+                    height_min DECIMAL(10, 2),
+                    height_max DECIMAL(10, 2)
+                )
+            """))
+        else:
+            db.execute(text("""
+                CREATE TABLE IF NOT EXISTS frame_cross_sections (
+                    id SERIAL PRIMARY KEY,
+                    series VARCHAR(20) NOT NULL,
+                    size VARCHAR(50),
+                    view_type VARCHAR(50),
+                    image_path VARCHAR(255),
+                    width_min DECIMAL(10, 2),
+                    width_max DECIMAL(10, 2),
+                    height_min DECIMAL(10, 2),
+                    height_max DECIMAL(10, 2)
+                )
+            """))
+        
+        db.commit()
         
         # Check if data already exists
         existing = db.execute(text("SELECT COUNT(*) FROM frame_cross_sections")).scalar()
