@@ -1,24 +1,39 @@
 import { useNavigate } from 'react-router-dom'
-import { Calendar, MapPin, Trash2 } from 'lucide-react'
+import { Calendar, MapPin, Trash2, Plus } from 'lucide-react'
 import styles from './ProjectCard.module.css'
 
 import type { Project } from '../../types/project'
 
 interface ProjectCardProps {
   project: Project
+  onView?: (id: string | number) => void
+  onEdit?: (id: string | number) => void
   onDelete?: (id: string | number) => void
+  onAddUnit?: (id: string | number) => void
+  isDeleting?: boolean
 }
 
-export function ProjectCard({ project, onDelete }: Readonly<ProjectCardProps>) {
+export function ProjectCard({ project, onView, onEdit, onDelete, onAddUnit, isDeleting = false }: Readonly<ProjectCardProps>) {
   const navigate = useNavigate()
 
   const handleViewDetails = () => {
-    navigate(`/project/${project.id}`)
+    if (onView) {
+      onView(project.id)
+    } else {
+      navigate(`/project/${project.id}`)
+    }
+  }
+
+  const handleAddUnit = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (onAddUnit) {
+      onAddUnit(project.id)
+    }
   }
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (onDelete && globalThis.confirm(`Delete project "${project.clientName}"?`)) {
+    if (onDelete) {
       onDelete(project.id)
     }
   }
@@ -61,12 +76,22 @@ export function ProjectCard({ project, onDelete }: Readonly<ProjectCardProps>) {
           View Details
         </button>
         <button
+          onClick={handleAddUnit}
+          className={styles.addUnitButton}
+          title="Add unit to project"
+          aria-label="Add unit to project"
+        >
+          <Plus size={16} />
+          Add Unit
+        </button>
+        <button
           onClick={handleDelete}
           className={styles.deleteButton}
           title="Delete project"
           aria-label="Delete project"
+          disabled={isDeleting}
         >
-          <Trash2 size={18} />
+          {isDeleting ? '...' : <Trash2 size={18} />}
         </button>
       </div>
     </div>

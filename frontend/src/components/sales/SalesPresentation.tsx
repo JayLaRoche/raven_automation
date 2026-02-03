@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { jsPDF } from 'jspdf'
+import html2canvas from 'html2canvas'
 import { useDrawingStore } from '../../store/drawingStore'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
-import { useReferencePDFGeneration } from '../../hooks/useReferencePDFGeneration'
 import { SmartParameterPanel } from './SmartParameterPanel'
 import { CanvasDrawingPreview } from './CanvasDrawingPreview'
-import { DrawingPDFViewer } from '../drawing/DrawingPDFViewer'
-import { PresentationMode } from './PresentationMode'
 import { QuickExport } from './QuickExport'
 import styles from './SalesPresentation.module.css'
 
@@ -15,20 +14,51 @@ import { useToast } from '../ui/Toast'
 import { generateDrawing } from '../../services/api'
 import { debounce } from 'lodash-es'
 
+interface LocationState {
+  initialDrawingData?: {
+    series: string
+    productType: string
+    width: number
+    height: number
+    glassType: string
+    frameColor: string
+    configuration?: string
+  }
+}
+
 export function SalesPresentation() {
   const { id: projectId } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { parameters, drawing, autoUpdate, presentationMode, setPresentationMode, setDrawing, setIsGenerating, selectedFrameView } = useDrawingStore()
-  const { pdfUrl, isLoading: pdfLoading, error: pdfError, generatePDF } = useReferencePDFGeneration()
+  const location = useLocation() as { state: LocationState | null }
+  const { parameters, drawing, autoUpdate, presentationMode, setPresentationMode, setDrawing, setIsGenerating, setParameters, selectedFrameView } = useDrawingStore()
   const [showExportModal, setShowExportModal] = useState(false)
-  const [viewMode, setViewMode] = useState<'canvas' | 'pdf'>('canvas')
-  const [presentationModeLocal, setPresentationModeLocal] = useState(false)
+  
   const toast = useToast()
   
-  // Toggle presentation mode
-  const togglePresentation = () => {
-    setPresentationModeLocal(!presentationModeLocal)
-  }
+  // Initialize parameters from location state if available (from "Add Unit" workflow)
+  useEffect(() => {
+    const incomingData = location.state?.initialDrawingData
+    if (incomingData) {
+      // Map the incoming data to the store's parameter format
+      setParameters({
+        series: incomingData.series,
+        productType: incomingData.productType,
+        width: incomingData.width,
+        height: incomingData.height,
+        glassType: incomingData.glassType,
+        frameColor: incomingData.frameColor,
+        configuration: incomingData.configuration,
+      })
+      
+      // Clear the location state to prevent re-initialization on component updates
+      window.history.replaceState({}, document.title)
+      
+      // Show success message
+      toast.success('Unit parameters loaded - ready to design!')
+      // Show success message
+      toast.success('Unit parameters loaded - ready to design!')
+    }
+  }, [location.state, setParameters, toast])
   
   // Refs for synchronized scrolling
   const leftPanelRef = useRef<HTMLDivElement>(null)
@@ -171,16 +201,6 @@ export function SalesPresentation() {
     onPresentationMode: () => setPresentationMode(!presentationMode),
   })
   
-  if (presentationMode) {
-    return (
-      <PresentationMode
-        drawing={drawing}
-        parameters={parameters}
-        onExit={() => setPresentationMode(false)}
-      />
-    )
-  }
-  
   return (
     <>
       {/* Header */}
@@ -197,53 +217,76 @@ export function SalesPresentation() {
               </button>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-raven-black">Raven's Design Sandbox</h1>
-              <p className="text-sm text-raven-text-secondary">CAD Drawing Generator</p>
+              {/* Replaced Text with Logo Image */}
+              <img 
+                src="/raven-logo.PNG" 
+                alt="Raven Design Studio" 
+                className="h-10 w-auto object-contain" 
+              />
             </div>
           </div>
           
           <div className="flex items-center gap-3">
-            {/* View Mode Switcher */}
-            <div className="flex items-center gap-2 bg-raven-bg-secondary p-1 rounded-lg">
-              <button
-                onClick={() => setViewMode('canvas')}
-                className={`px-3 py-1 rounded transition-colors ${viewMode === 'canvas' ? 'bg-raven-white text-raven-black font-medium' : 'text-raven-text-secondary hover:text-raven-black'}`}
-              >
-                📐 Canvas
-              </button>
-              <button
-                onClick={() => setViewMode('pdf')}
-                className={`px-3 py-1 rounded transition-colors ${viewMode === 'pdf' ? 'bg-raven-white text-raven-black font-medium' : 'text-raven-text-secondary hover:text-raven-black'}`}
-              >
-                📄 PDF
-              </button>
-            </div>
-            
             {/* Generate PDF Button */}
             <button
-              onClick={() => {
-                if (!parameters.series || !parameters.width || !parameters.height) {
-                  toast.error('Please fill in required parameters')
-                  return
+              onClick={async () => {
+                try {
+                  toast.success('Generating PDF...')
+                  
+                  // 1. Find the canvas container (includes canvas + SVG overlays)
+                  const canvas = document.querySelector('canvas')
+                  if (!canvas) {
+                    toast.error('No drawing found to export')
+                    return
+                  }
+                  
+                  // 2. Get the parent container that includes the elevation SVG overlay
+                  const drawingContainer = canvas.parentElement
+                  if (!drawingContainer) {
+                    toast.error('Drawing container not found')
+                    return
+                  }
+                  
+                  // 3. Capture the entire container (canvas + SVG overlays) using html2canvas
+                  const capturedCanvas = await html2canvas(drawingContainer, {
+                    backgroundColor: '#ffffff',
+                    scale: 2, // Higher quality
+                    useCORS: true,
+                    logging: false,
+                  })
+                  
+                  // 4. Create PDF (Landscape, Millimeters, A3 size)
+                  const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a3'
+                  })
+
+                  // 5. Convert captured canvas to image data
+                  const imgData = capturedCanvas.toDataURL('image/png', 1)
+
+                  // 6. Calculate dimensions (A3 is 420mm x 297mm)
+                  const pdfWidth = 420
+                  const pdfHeight = 297
+                  const margin = 10
+                  
+                  // 7. Add image to PDF with margins
+                  pdf.addImage(imgData, 'PNG', margin, margin, pdfWidth - (margin * 2), pdfHeight - (margin * 2))
+
+                  // 8. Generate filename and save
+                  const filename = `${parameters.itemNumber || 'drawing'}_${parameters.series || 'custom'}.pdf`
+                  pdf.save(filename)
+                  
+                  toast.success('PDF generated with elevation view!')
+                } catch (err) {
+                  console.error("PDF generation error:", err)
+                  toast.error("Failed to generate PDF. Please try again.")
                 }
-                generatePDF({
-                  series: parameters.series,
-                  product_type: parameters.productType || 'FIXED',
-                  width: parameters.width,
-                  height: parameters.height,
-                  glass_type: parameters.glassType || 'Clear Low E',
-                  frame_color: parameters.frameColor || 'Black',
-                  configuration: parameters.configuration || 'O',
-                  item_number: parameters.itemNumber || 'P001',
-                  po_number: parameters.poNumber || '',
-                  notes: parameters.notes || '',
-                })
-                setViewMode('pdf')
               }}
-              disabled={pdfLoading || !parameters.series || !parameters.width}
+              disabled={!drawing}
               className="btn-primary px-4 py-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed font-medium transition-colors"
             >
-              {pdfLoading ? '⏳ Generating PDF...' : '📄 Generate PDF'}
+              📄 Generate PDF
             </button>
             
             <button
@@ -258,19 +301,9 @@ export function SalesPresentation() {
       </header>
       
       {/* Main Content */}
-      <div className={`flex-1 overflow-hidden ${styles.mainContent} ${viewMode === 'canvas' ? styles.canvasView : styles.pdfView}`}>
-        {viewMode === 'pdf' ? (
-          // PDF View (Full Width)
-          <div className="h-full p-4 bg-raven-bg-secondary">
-            <DrawingPDFViewer 
-              pdfUrl={pdfUrl}
-              loading={pdfLoading}
-              error={pdfError}
-            />
-          </div>
-        ) : (
-          // Canvas View - 2 Column Layout with Sticky Canvas
-          <div className={styles.canvasViewLayout}>
+      <div className={`flex-1 overflow-hidden ${styles.mainContent} ${styles.canvasView}`}>
+        {/* Canvas View - 2 Column Layout with Sticky Canvas */}
+        <div className={styles.canvasViewLayout}>
             {/* Left: Parameter Panel (30%) */}
             <div ref={leftPanelRef} className={styles.leftPanel}>
               <SmartParameterPanel />
@@ -280,8 +313,8 @@ export function SalesPresentation() {
             <div ref={rightPanelRef} className={styles.rightPanel}>
               <CanvasDrawingPreview
                 selectedFrameView={selectedFrameView}
-                presentationMode={presentationModeLocal}
-                onPresentationMode={togglePresentation}
+                presentationMode={presentationMode}
+                onPresentationMode={() => setPresentationMode(!presentationMode)}
                 parameters={{
                   series: parameters.series,
                   width: parameters.width,
@@ -291,11 +324,11 @@ export function SalesPresentation() {
                   frameColor: parameters.frameColor || 'White',
                   configuration: parameters.configuration || 'O',
                   itemNumber: parameters.itemNumber,
+                  panelCount: parameters.panelCount || 1,
                 }}
               />
             </div>
           </div>
-        )}
       </div>
       
       {/* Export Modal */}
@@ -325,25 +358,55 @@ export function SalesPresentation() {
               </button>
               
               <button
-                onClick={() => {
-                  if (!parameters.series || !parameters.width || !parameters.height) {
-                    toast.error('Please fill in required parameters')
-                    return
+                onClick={async () => {
+                  try {
+                    const canvas = document.querySelector('canvas')
+                    if (!canvas) {
+                      toast.error('No drawing found to export')
+                      return
+                    }
+                    
+                    // Get the container with canvas + SVG overlays
+                    const drawingContainer = canvas.parentElement
+                    if (!drawingContainer) {
+                      toast.error('Drawing container not found')
+                      return
+                    }
+                    
+                    // Capture complete drawing (canvas + elevation SVG)
+                    const capturedCanvas = await html2canvas(drawingContainer, {
+                      backgroundColor: '#ffffff',
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    })
+                    
+                    // Create PDF from captured image
+                    const pdf = new jsPDF({
+                      orientation: 'landscape',
+                      unit: 'mm',
+                      format: 'a3'
+                    })
+
+                    const imgData = capturedCanvas.toDataURL('image/png', 1)
+
+                    // A3 dimensions with margins
+                    const pdfWidth = 420
+                    const pdfHeight = 297
+                    const margin = 10
+                    
+                    pdf.addImage(imgData, 'PNG', margin, margin, pdfWidth - (margin * 2), pdfHeight - (margin * 2))
+
+                    // Save with descriptive filename
+                    const filename = `${parameters.itemNumber || 'drawing'}_${parameters.series || 'custom'}.pdf`
+                    pdf.save(filename)
+                    
+                    toast.success('PDF exported successfully!')
+                    setShowExportModal(false)
+                  } catch (err) {
+                    console.error('PDF export error:', err)
+                    toast.error('Failed to export PDF')
                   }
-                  generatePDF({
-                    series: parameters.series,
-                    product_type: parameters.productType || 'FIXED',
-                    width: parameters.width,
-                    height: parameters.height,
-                    glass_type: parameters.glassType || 'Clear Low E',
-                    frame_color: parameters.frameColor || 'Black',
-                    configuration: parameters.configuration || 'O',
-                    item_number: parameters.itemNumber || 'P001',
-                    po_number: parameters.poNumber || '',
-                    notes: parameters.notes || '',
-                  })
-                  toast.success('PDF generated! Switch to PDF view to download.')
-                  setShowExportModal(false)
                 }}
                 className="w-full p-4 text-left rounded-lg border border-raven-border-light hover:bg-raven-bg-secondary transition-colors hover:shadow-sm"
               >

@@ -231,6 +231,9 @@ button.primary {
   background-color: var(--raven-black);
   color: var(--raven-white);
   box-shadow: var(--shadow-md);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
 }
 
 .btn-primary:hover,
@@ -243,20 +246,31 @@ button.primary:hover {
 .btn-primary:active,
 button.primary:active {
   transform: translateY(0);
+  box-shadow: var(--shadow-md);
 }
 
 /* SECONDARY BUTTON */
 .btn-secondary,
 button.secondary {
-  background-color: var(--raven-light-gray);
+  background-color: var(--raven-white);
   color: var(--raven-text-primary);
-  border: 1px solid var(--raven-border-gray);
+  border: 2px solid var(--raven-border-gray);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-weight: 600;
 }
 
 .btn-secondary:hover,
 button.secondary:hover {
-  background-color: #efefef;
-  border-color: #d0d0d0;
+  background-color: var(--raven-light-gray);
+  border-color: #c0c0c0;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:active,
+button.secondary:active {
+  transform: translateY(0);
 }
 
 /* OUTLINE BUTTON */
@@ -265,13 +279,23 @@ button.outline {
   background-color: transparent;
   color: var(--raven-accent-blue);
   border: 2px solid var(--raven-accent-blue);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-weight: 600;
 }
 
 .btn-outline:hover,
 button.outline:hover {
-  background-color: rgba(0, 102, 204, 0.05);
+  background-color: rgba(0, 102, 204, 0.08);
   border-color: var(--raven-accent-blue-hover);
   color: var(--raven-accent-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-outline:active,
+button.outline:active {
+  transform: translateY(0);
 }
 
 /* LINK BUTTON */

@@ -22,17 +22,73 @@ DimensionArrow.propTypes = {
 };
 
 /**
+ * Arrow pointing right for slider panels
+ */
+const SlideArrow = ({ x, y, width = 40, height = 20 }) => (
+  <g>
+    {/* Arrow shaft */}
+    <line x1={x - width / 2} y1={y} x2={x + width / 2} y2={y} stroke="black" strokeWidth="3" />
+    {/* Arrow head */}
+    <polygon points={`${x + width / 2},${y} ${x + width / 2 - 12},${y - 8} ${x + width / 2 - 12},${y + 8}`} fill="black" stroke="black" strokeWidth="1" />
+  </g>
+);
+
+SlideArrow.propTypes = {
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+  width: PropTypes.number,
+  height: PropTypes.number,
+};
+
+/**
+ * Handle rectangle for doors
+ */
+const DoorHandle = ({ x, y, width = 6, height = 40 }) => (
+  <rect x={x - width / 2} y={y - height / 2} width={width} height={height} fill="black" stroke="black" strokeWidth="1" />
+);
+
+DoorHandle.propTypes = {
+  x: PropTypes.number.isRequired,
+  y: PropTypes.number.isRequired,
+  width: PropTypes.number,
+  height: PropTypes.number,
+};
+
+/**
  * A component that renders a technical elevation drawing of a window using SVG.
  * Designed to fit responsibly into any parent container (Canvas).
+ * 
+ * Enhanced to support:
+ * - Door types with thicker thresholds (bottom frame)
+ * - Slider doors with directional arrows
+ * - Fixed panels with "F" label
+ * - Hinged doors with handles
  */
-const WindowElevationView = ({ 
-  width = 609.6, 
-  height = 1524, 
-  gridCols = 2, 
-  gridRows = 3 
-}) => {
+const WindowElevationView = ({ parameters = {}, selectedFrameView }) => {
+  // Extract values from parameters object and convert inches to mm
+  const width = parameters.width ? parameters.width * 25.4 : 609.6
+  const height = parameters.height ? parameters.height * 25.4 : 1524
+  const gridCols = 2
+  const gridRows = 3
+  const productType = parameters.productType || ''
+  const configuration = parameters.configuration || ''
+  const panelCount = parameters.panelCount || 1
+  const handleSide = parameters.handleSide || ''
+  
+  // Parse swing direction from configuration
+  const swingDirection = configuration.includes('Left') ? 'Left' : 
+                        configuration.includes('Right') ? 'Right' : 'Right'
+  const isInswing = configuration.includes('Inswing')
+  const isOutswing = configuration.includes('Outswing')
+  
   // Helper function to convert millimeters to inches
   const toInches = (val) => `${(val / 25.4).toFixed(2)}"`;
+
+  // Clamp panelCount between 1 and 6
+  const validPanelCount = Math.min(Math.max(panelCount, 1), 6);
+  
+  // Calculate width per panel for mulling
+  const panelWidth = width / validPanelCount;
 
   // Padding allows space for the dimension lines outside the frame
   const padding = 300;
@@ -41,9 +97,15 @@ const WindowElevationView = ({
   const viewBoxWidth = width + (padding * 2);
   const viewBoxHeight = height + (padding * 2);
 
+  // Determine if this is a door type
+  const isDoorType = productType?.toLowerCase().includes('door') || productType?.toLowerCase().includes('slider');
+  
+  // Threshold line weight - thicker for doors
+  const thresholdWeight = isDoorType ? 20 : 10;
+
   const styles = {
     frame: { stroke: 'black', strokeWidth: 10, fill: 'none' }, 
-    grid: { stroke: 'black', strokeWidth: 5, fill: 'none' }, // Where I can add window fill color (like a light blue)
+    grid: { stroke: 'black', strokeWidth: 5, fill: 'none' },
     dimensionLine: { stroke: 'black', strokeWidth: 4 },
     dimensionText: { 
       fontFamily: 'Arial, sans-serif', 
@@ -52,6 +114,14 @@ const WindowElevationView = ({
       textAnchor: 'middle', 
       fill: 'black' 
     },
+    handleText: {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 80,
+      fontWeight: 'bold',
+      textAnchor: 'middle',
+      textAlignmentBaseline: 'middle',
+      fill: 'black'
+    }
   };
 
   return (
@@ -64,7 +134,7 @@ const WindowElevationView = ({
         xmlns="http://www.w3.org/2000/svg"
         style={{ overflow: 'hidden' }}
       >
-        {/* Main Window Frame */}
+        {/* Main Window Frame - Single outer frame */}
         <rect x={padding} y={padding} width={width} height={height} {...styles.frame} />
 
         {/* Heavy Outer Architectural Border with 12px Gap - More Pronounced */}
@@ -79,17 +149,154 @@ const WindowElevationView = ({
           style={{ pointerEvents: 'none' }}
         />
 
-        {/* Grid Lines (Muntins) */}
-        {Array.from({ length: gridCols - 1 }).map((_, i) => {
-          const colNum = i + 1;
-          const x = padding + (width / gridCols) * colNum;
-          return <line key={`vertical-col-${colNum}`} x1={x} y1={padding} x2={x} y2={padding + height} {...styles.grid} />;
+        {/* Door Threshold - Thicker bottom frame for doors */}
+        {isDoorType && (
+          <rect 
+            x={padding} 
+            y={padding + height - thresholdWeight} 
+            width={width} 
+            height={thresholdWeight} 
+            fill="black" 
+          />
+        )}
+
+        {/* Panel Loop - Draws mullions and grid lines for each panel */}
+        {Array.from({ length: validPanelCount }).map((_, panelIndex) => {
+          const xOffset = padding + (panelIndex * panelWidth);
+          
+          return (
+            <g key={`panel-${panelIndex}`}>
+              {/* Mullion (vertical divider) - Only draw between panels, not after last one */}
+              {panelIndex > 0 && (
+                <line
+                  x1={xOffset}
+                  y1={padding}
+                  x2={xOffset}
+                  y2={padding + height}
+                  stroke="black"
+                  strokeWidth="10"
+                  fill="none"
+                />
+              )}
+
+              {/* Grid Lines (Muntins) for this panel */}
+              {/* Vertical grid lines within panel */}
+              {Array.from({ length: gridCols - 1 }).map((_, i) => {
+                const colNum = i + 1;
+                const x = xOffset + (panelWidth / gridCols) * colNum;
+                return (
+                  <line
+                    key={`panel-${panelIndex}-vertical-col-${colNum}`}
+                    x1={x}
+                    y1={padding}
+                    x2={x}
+                    y2={padding + height - (isDoorType ? thresholdWeight : 0)}
+                    {...styles.grid}
+                  />
+                );
+              })}
+
+              {/* Horizontal grid lines within panel */}
+              {Array.from({ length: gridRows - 1 }).map((_, i) => {
+                const rowNum = i + 1;
+                const y = padding + (height / gridRows) * rowNum;
+                return (
+                  <line
+                    key={`panel-${panelIndex}-horizontal-row-${rowNum}`}
+                    x1={xOffset}
+                    y1={y}
+                    x2={xOffset + panelWidth}
+                    y2={y}
+                    {...styles.grid}
+                  />
+                );
+              })}
+            </g>
+          );
         })}
-        {Array.from({ length: gridRows - 1 }).map((_, i) => {
-          const rowNum = i + 1;
-          const y = padding + (height / gridRows) * rowNum;
-          return <line key={`horizontal-row-${rowNum}`} x1={padding} y1={y} x2={padding + width} y2={y} {...styles.grid} />;
-        })}
+
+        {/* Slider Panel Arrows and Fixed Labels - Distributed across panels */}
+        {productType?.toLowerCase().includes('slider') && (
+          <>
+            {Array.from({ length: validPanelCount }).map((_, panelIndex) => {
+              const xOffset = padding + (panelIndex * panelWidth);
+              
+              return (
+                <g key={`panel-${panelIndex}-slider`}>
+                  {/* For each column within the panel */}
+                  {Array.from({ length: gridCols }).map((_, colIdx) => {
+                    const colWidth = panelWidth / gridCols;
+                    const panelCenterX = xOffset + (colIdx + 0.5) * colWidth;
+                    const panelCenterY = padding + height / 2;
+                    
+                    const isMoving = colIdx === 0;
+                    const uniqueKey = `panel-${panelIndex}-col-${colIdx}-${isMoving ? 'slider' : 'fixed'}`;
+                    
+                    return isMoving ? (
+                      <SlideArrow
+                        key={uniqueKey}
+                        x={panelCenterX}
+                        y={panelCenterY}
+                        width={80}
+                      />
+                    ) : (
+                      <text
+                        key={uniqueKey}
+                        x={panelCenterX}
+                        y={panelCenterY}
+                        {...styles.handleText}
+                        dy="0.3em"
+                      >
+                        F
+                      </text>
+                    );
+                  })}
+                </g>
+              );
+            })}
+          </>
+        )}
+
+        {/* Door Handles - For all door types based on swing direction */}
+        {isDoorType && !productType?.toLowerCase().includes('slider') && (
+          <>
+            {Array.from({ length: validPanelCount }).map((_, panelIndex) => {
+              const xOffset = padding + (panelIndex * panelWidth);
+              
+              // Determine handle position
+              // Priority: 1) User-selected handleSide, 2) Swing direction from configuration
+              const effectiveHandleSide = handleSide || swingDirection;
+              const handleX = effectiveHandleSide === 'Left' ? xOffset + 60 : xOffset + panelWidth - 60;
+              
+              return (
+                <g key={`panel-${panelIndex}-handle-group`}>
+                  {/* Door Handle */}
+                  <DoorHandle
+                    key={`panel-${panelIndex}-handle`}
+                    x={handleX}
+                    y={padding + height / 2}
+                    width={10}
+                    height={70}
+                  />
+                  
+                  {/* Swing Direction Indicator (Arc) */}
+                  {(isInswing || isOutswing) && (
+                    <path
+                      d={swingDirection === 'Left' 
+                        ? `M ${xOffset + 40} ${padding + height - thresholdWeight - 20} Q ${xOffset + 40} ${padding + height - thresholdWeight - 120}, ${xOffset + 140} ${padding + height - thresholdWeight - 120}`
+                        : `M ${xOffset + panelWidth - 40} ${padding + height - thresholdWeight - 20} Q ${xOffset + panelWidth - 40} ${padding + height - thresholdWeight - 120}, ${xOffset + panelWidth - 140} ${padding + height - thresholdWeight - 120}`
+                      }
+                      stroke="black"
+                      strokeWidth="3"
+                      fill="none"
+                      strokeDasharray="8,4"
+                    />
+                  )}
+                </g>
+              );
+            })}
+          </>
+        )}
 
         {/* Top Dimension (Width) */}
         <g transform={`translate(${padding}, ${padding - 150})`}>
@@ -119,17 +326,23 @@ const WindowElevationView = ({
 };
 
 WindowElevationView.propTypes = {
-  width: PropTypes.number,
-  height: PropTypes.number,
-  gridCols: PropTypes.number,
-  gridRows: PropTypes.number,
+  parameters: PropTypes.shape({
+    series: PropTypes.string,
+    width: PropTypes.number,
+    height: PropTypes.number,
+    productType: PropTypes.string,
+    glassType: PropTypes.string,
+    frameColor: PropTypes.string,
+    configuration: PropTypes.string,
+    itemNumber: PropTypes.string,
+    panelCount: PropTypes.number,
+  }),
+  selectedFrameView: PropTypes.oneOf(['head', 'sill', 'jamb']),
 };
 
 WindowElevationView.defaultProps = {
-  width: 609.6,
-  height: 1524,
-  gridCols: 2,
-  gridRows: 3,
+  parameters: {},
+  selectedFrameView: 'head',
 };
 
 export default WindowElevationView;

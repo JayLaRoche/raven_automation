@@ -24,8 +24,8 @@ export function InstantDrawingDisplay({ onPresentationMode }: DrawingDisplayProp
   }, [drawing, isGenerating, displayedDrawing])
   
   const scale = 5 // pixels per inch
-  const width = (parameters.width ?? 36) * scale
-  const height = (parameters.height ?? 48) * scale
+  const width = (parameters.width ?? 0) * scale
+  const height = (parameters.height ?? 0) * scale
   const canvasWidth = 800
   const canvasHeight = 1000
   

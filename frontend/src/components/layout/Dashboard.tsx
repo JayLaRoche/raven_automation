@@ -1,43 +1,86 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, ArrowRight } from 'lucide-react'
+import { CreateProjectModal } from '../dashboard/CreateProjectModal'
+import { createProject, getProjects } from '../../services/api'
 import styles from './Dashboard.module.css'
-
-
-interface RecentProject {
-  id: number
-  clientName: string
-  date: string
-  address: string
-  unitCount: number
-}
-
-// Mock recent projects - these would come from Google Sheets in production
-const MOCK_RECENT_PROJECTS: RecentProject[] = [
-  {
-    id: 1,
-    clientName: 'Steve Delrosa',
-    date: '2025-01-15',
-    address: '1234 Maple Avenue, Springfield, IL 62701',
-    unitCount: 35,
-  },
-  {
-    id: 2,
-    clientName: 'Bridgette Fallon',
-    date: '2025-01-12',
-    address: '5678 Oak Street, Chicago, IL 60601',
-    unitCount: 22,
-  },
-  {
-    id: 3,
-    clientName: 'Marcus Johnson',
-    date: '2025-01-10',
-    address: '9012 Elm Road, Naperville, IL 60540',
-    unitCount: 18,
-  },
-]
 
 export function Dashboard() {
   const navigate = useNavigate()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+  const [totalProjects, setTotalProjects] = useState(0)
+  const [totalUnits, setTotalUnits] = useState(0)
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
+
+  // Load stats on mount
+  useEffect(() => {
+    loadStats()
+  }, [])
+
+  const loadStats = async () => {
+    try {
+      setIsLoadingStats(true)
+      const response = await getProjects()
+      
+      // Count total projects
+      const projectCount = response.projects.length
+      
+      // Sum up all unit counts across projects
+      const unitCount = response.projects.reduce((sum, project) => sum + (project.unitCount || 0), 0)
+      
+      setTotalProjects(projectCount)
+      setTotalUnits(unitCount)
+    } catch (error) {
+      console.error('Failed to load stats:', error)
+      // Keep at 0 if error
+    } finally {
+      setIsLoadingStats(false)
+    }
+  }
+
+  const handleCreateProject = async (data: { clientName: string; address: string; date: string }) => {
+    try {
+      setIsCreating(true)
+      
+      // Validate data before sending
+      if (!data.clientName || !data.address || !data.date) {
+        alert('Please fill in all required fields.')
+        return
+      }
+      
+      // Create project in database
+      const response = await createProject({
+        clientName: data.clientName.trim(),
+        address: data.address.trim(),
+        date: data.date
+      })
+      
+      if (response.success && response.id) {
+        // Close modal first
+        setIsModalOpen(false)
+        
+        // Reload stats to reflect new project
+        await loadStats()
+        
+        // Navigate to the new project's drawing generator
+        navigate(`/project/${response.id}`)
+      } else {
+        throw new Error('Project creation did not return a valid ID')
+      }
+    } catch (error) {
+      console.error('Failed to create project:', error)
+      
+      // More detailed error message
+      const errorMessage = error instanceof Error 
+        ? `Failed to create project: ${error.message}` 
+        : 'Failed to create project. Please check the server connection and try again.'
+      
+      alert(errorMessage)
+    } finally {
+      setIsCreating(false)
+    }
+  }
 
   return (
     <div className={styles.container}>
@@ -55,7 +98,7 @@ export function Dashboard() {
         <div className={styles.quickActionsGrid}>
           <button
             className={styles.quickActionCard}
-            onClick={() => navigate('/generator')}
+            onClick={() => setIsModalOpen(true)}
           >
             <div className={styles.quickActionIcon}>
               <Plus size={32} />
@@ -71,7 +114,7 @@ export function Dashboard() {
 
           <button
             className={styles.quickActionCard}
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/projects')}
           >
             <div className={styles.quickActionIcon}>
               <Plus size={32} />
@@ -87,46 +130,34 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Projects Section */}
-      <div className={styles.recentSection}>
-        <h2 className={styles.sectionTitle}>Recent Projects</h2>
-        <div className={styles.projectsList}>
-          {MOCK_RECENT_PROJECTS.map((project) => (
-            <div key={project.id} className={styles.projectItem}>
-              <div className={styles.projectHeader}>
-                <h3 className={styles.projectName}>{project.clientName}</h3>
-                <span className={styles.unitBadge}>{project.unitCount} units</span>
-              </div>
-              <div className={styles.projectDetails}>
-                <p className={styles.projectDate}>📅 {new Date(project.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                <p className={styles.projectAddress}>📍 {project.address}</p>
-              </div>
-              <button
-                className={styles.openButton}
-                onClick={() => navigate(`/project/${project.id}`)}
-              >
-                Open Project <ArrowRight size={16} />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Stats Section */}
       <div className={styles.statsSection}>
         <div className={styles.statCard}>
-          <div className={styles.statNumber}>24</div>
+          <div className={styles.statNumber}>
+            {isLoadingStats ? '...' : totalProjects}
+          </div>
           <div className={styles.statLabel}>Total Projects</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statNumber}>156</div>
+          <div className={styles.statNumber}>
+            {isLoadingStats ? '...' : totalUnits}
+          </div>
           <div className={styles.statLabel}>Total Units</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statNumber}>12</div>
+          <div className={styles.statNumber}>
+            {isLoadingStats ? '...' : totalProjects}
+          </div>
           <div className={styles.statLabel}>This Month</div>
         </div>
       </div>
+
+      <CreateProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreate={handleCreateProject}
+        isLoading={isCreating}
+      />
     </div>
   )
 }

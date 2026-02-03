@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Navigation } from './components/layout/Navigation'
 import { Dashboard } from './components/layout/Dashboard'
-import { ProjectDashboard } from './components/dashboard/ProjectDashboard'
+import { ProjectsListPage } from './pages/ProjectsListPage'
 import { SalesPresentation } from './components/sales/SalesPresentation'
 import { ToastContainer } from './components/ui/Toast'
 
@@ -18,8 +18,8 @@ function App() {
             {/* Dashboard - Home Page */}
             <Route path="/" element={<Dashboard />} />
 
-            {/* Projects - Legacy projects list */}
-            <Route path="/projects" element={<ProjectDashboard />} />
+            {/* Projects - Full projects list page */}
+            <Route path="/projects" element={<ProjectsListPage />} />
 
             {/* Drawing Generator - New drawing tool */}
             <Route path="/generator" element={<SalesPresentation />} />

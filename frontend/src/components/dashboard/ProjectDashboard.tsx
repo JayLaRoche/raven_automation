@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, Settings } from 'lucide-react'
 import { ProjectCard } from './ProjectCard'
+import { CreateProjectModal } from './CreateProjectModal'
 import styles from './ProjectDashboard.module.css'
 
 import type { Project } from '../../types/project'
@@ -61,6 +62,7 @@ export function ProjectDashboard() {
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS)
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<'projects' | 'settings'>('projects')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Filter projects based on search query
   const filteredProjects = projects.filter((project) => {
@@ -76,8 +78,21 @@ export function ProjectDashboard() {
   }
 
   const handleNewProject = () => {
-    // TODO: Open create project modal or navigate to form
-    alert('New Project feature coming soon')
+    setIsModalOpen(true)
+  }
+
+  const handleCreateProject = (data: { clientName: string; address: string; date: string }) => {
+    const newProject: Project = {
+      id: Date.now(), // Generate a unique ID
+      clientName: data.clientName,
+      address: data.address,
+      date: data.date,
+      unitCount: 0, // Default to 0 units for new project
+      status: 'active', // Default status
+    }
+    
+    // Add new project to the beginning of the list
+    setProjects([newProject, ...projects])
   }
 
   return (
@@ -85,7 +100,12 @@ export function ProjectDashboard() {
       {/* Header */}
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1 className={styles.logo}>Raven Doors & Windows</h1>
+          {/* Replaced Text with Logo Image */}
+          <img 
+            src="/raven-logo.PNG" 
+            alt="Raven Doors & Windows" 
+            className={styles.logoImage} 
+          />
           <nav className={styles.nav}>
             <button
               className={`${styles.navButton} ${activeTab === 'projects' ? styles.active : ''}`}
@@ -108,19 +128,77 @@ export function ProjectDashboard() {
       <main className={styles.main}>
         {activeTab === 'projects' ? (
           <>
-            {/* Title Section */}
-            <section className={styles.titleSection}>
-              <div className={styles.titleContent}>
-                <h2 className={styles.pageTitle}>Projects</h2>
-                <p className={styles.subtitle}>
-                  Manage your window specification projects
-                </p>
+            {/* Quick Actions Section */}
+            <div className={styles.quickActionsSection}>
+              <h2 className={styles.sectionTitle}>Quick Actions</h2>
+              <div className={styles.quickActionsGrid}>
+                {/* Start New Drawing Button */}
+                <button 
+                  className={styles.quickActionCard}
+                  onClick={handleNewProject}
+                >
+                  <div className={styles.quickActionIcon}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <path d="M12 18v-6"></path>
+                      <path d="M9 15h6"></path>
+                    </svg>
+                  </div>
+                  <h3 className={styles.quickActionTitle}>Start New Drawing</h3>
+                  <p className={styles.quickActionDescription}>Create a custom shop drawing</p>
+                  <div className={styles.quickActionArrow}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14"></path>
+                      <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </button>
+
+                {/* View All Projects Button */}
+                <button 
+                  className={styles.quickActionCard}
+                  onClick={() => setActiveTab('projects')}
+                >
+                  <div className={styles.quickActionIcon}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"></path>
+                      <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path>
+                      <path d="M12 3v6"></path>
+                    </svg>
+                  </div>
+                  <h3 className={styles.quickActionTitle}>View All Projects</h3>
+                  <p className={styles.quickActionDescription}>Browse your project library</p>
+                  <div className={styles.quickActionArrow}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14"></path>
+                      <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </button>
+
+                {/* Settings Button */}
+                <button 
+                  className={styles.quickActionCard}
+                  onClick={() => setActiveTab('settings')}
+                >
+                  <div className={styles.quickActionIcon}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  </div>
+                  <h3 className={styles.quickActionTitle}>Settings</h3>
+                  <p className={styles.quickActionDescription}>Configure your preferences</p>
+                  <div className={styles.quickActionArrow}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14"></path>
+                      <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </button>
               </div>
-              <button className={styles.newProjectButton} onClick={handleNewProject}>
-                <Plus size={20} />
-                New Project
-              </button>
-            </section>
+            </div>
 
             {/* Search Bar */}
             <div className={styles.searchContainer}>
@@ -157,6 +235,12 @@ export function ProjectDashboard() {
                     Create First Project
                   </button>
                 )}
+
+      <CreateProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreate={handleCreateProject}
+      />
               </div>
             )}
           </>

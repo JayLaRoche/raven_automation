@@ -25,12 +25,30 @@ export function useReferencePDFGeneration() {
     mutationFn: async (params: DrawingParameters) => {
       console.log('Generating reference layout PDF with params:', params)
 
+      // Capture canvas as Base64 image
+      const canvas = document.querySelector('canvas') as HTMLCanvasElement
+      if (!canvas) {
+        throw new Error('Canvas not found - cannot generate PDF')
+      }
+
+      // Convert canvas to high-quality PNG Base64
+      const imageSnapshot = canvas.toDataURL('image/png', 1.0)
+      console.log('Canvas captured as image:', {
+        width: canvas.width,
+        height: canvas.height,
+        dataLength: imageSnapshot.length
+      })
+
+      // Send parameters + image snapshot to backend
       const response = await fetch('/api/drawings/generate-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          ...params,
+          imageSnapshot: imageSnapshot  // Add captured canvas image
+        }),
       })
 
       if (!response.ok) {

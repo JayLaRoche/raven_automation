@@ -8,8 +8,8 @@ interface PresentationModeProps {
 
 export function PresentationMode({ drawing, parameters, onExit }: PresentationModeProps) {
   const scale = 5
-  const width = (parameters.width ?? 36) * scale
-  const height = (parameters.height ?? 48) * scale
+  const width = (parameters.width ?? 0) * scale
+  const height = (parameters.height ?? 0) * scale
   
   return (
     <div className="w-full h-screen bg-black flex items-center justify-center relative overflow-hidden">
