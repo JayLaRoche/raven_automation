@@ -43,7 +43,6 @@ services:
     name: raven-frontend
     env: static
     plan: free
-    region: ohio
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
     pullRequestPreviewsEnabled: true
