@@ -17,11 +17,11 @@ services:
       - key: DATABASE_URL
         value: sqlite:///./data/raven_drawings.db
       - key: BACKEND_URL
-        value: https://raven-backend.onrender.com
+        value: https://raven-backend-sjb7.onrender.com
       - key: FRONTEND_URL
         value: https://raven-design-studio.onrender.com
       - key: CORS_ORIGINS
-        value: https://raven-design-studio.onrender.com,https://raven-backend.onrender.com
+        value: https://raven-design-studio.onrender.com,https://raven-backend-sjb7.onrender.com
       - key: APP_ENV
         value: production
       - key: ENVIRONMENT
@@ -46,21 +46,21 @@ services:
     routes:
       - type: rewrite
         source: /api/*
-        destination: https://raven-backend.onrender.com/api/*
+        destination: https://raven-backend-sjb7.onrender.com/api/*
       - type: rewrite
         source: /static/*
-        destination: https://raven-backend.onrender.com/static/*
+        destination: https://raven-backend-sjb7.onrender.com/static/*
       - type: rewrite
         source: /frame-library/*
-        destination: https://raven-backend.onrender.com/frame-library/*
+        destination: https://raven-backend-sjb7.onrender.com/frame-library/*
       - type: rewrite
         source: /assets/*
-        destination: https://raven-backend.onrender.com/assets/*
+        destination: https://raven-backend-sjb7.onrender.com/assets/*
       - type: rewrite
         source: /*
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://raven-backend.onrender.com
+        value: https://raven-backend-sjb7.onrender.com
       - key: NODE_VERSION
         value: 20.11.0
