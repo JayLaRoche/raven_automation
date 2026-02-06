@@ -23,9 +23,9 @@ services:
       - key: BACKEND_URL
         value: https://raven-backend.onrender.com
       - key: FRONTEND_URL
-        value: https://raven-frontend.onrender.com
+        value: https://raven-design-studio.onrender.com
       - key: CORS_ORIGINS
-        value: https://raven-frontend.onrender.com,https://raven-backend.onrender.com
+        value: https://raven-design-studio.onrender.com,https://raven-backend.onrender.com
       - key: APP_ENV
         value: production
       - key: ENVIRONMENT

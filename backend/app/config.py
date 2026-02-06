@@ -96,7 +96,7 @@ class Settings:
     
     CORS_ORIGINS = os.getenv(
         "CORS_ORIGINS",
-        "http://localhost:3000,http://localhost:8000"
+        "http://localhost:3000,http://localhost:8000,https://raven-design-studio.onrender.com"
     ).split(",")
     CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "true").lower() == "true"
     
