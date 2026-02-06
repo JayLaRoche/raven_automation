@@ -5,8 +5,9 @@ python-multipart==0.0.6
 
 # Database
 sqlalchemy==2.1.0
-psycopg2-binary==2.9.9  # PostgreSQL adapter
 alembic==1.13.1  # Database migrations
+# psycopg2-binary only needed for PostgreSQL (not used on Render free tier with SQLite)
+# psycopg2-binary==2.9.9
 
 # Google Sheets 
 google-auth==2.23.4
@@ -19,8 +20,8 @@ matplotlib==3.9.2
 reportlab==4.0.7
 Pillow==12.0.0
 PyPDF2==3.0.1
-PyMuPDF==1.26.7
 numpy==1.26.0
+# PyMuPDF removed - not used in backend code and fails to compile on Render Linux
 
 # Utilities
 python-dotenv==1.2.1
