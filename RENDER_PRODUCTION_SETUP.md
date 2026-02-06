@@ -14,6 +14,7 @@
 #### Backend Service (Auto-configured by Render)
 ```env
 DATABASE_URL=<auto-populated from PostgreSQL database>
+BACKEND_URL=https://raven-backend.onrender.com
 CORS_ORIGINS=https://raven-frontend.onrender.com
 APP_ENV=production
 ENVIRONMENT=production

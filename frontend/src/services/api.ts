@@ -152,6 +152,16 @@ export const getFrameSeriesWithImages = async (): Promise<FrameSeriesWithImagesR
   return response.data
 }
 
+export const getProductTypes = async () => {
+  const response = await api.get('/api/frames/product-types')
+  return response.data
+}
+
+export const getSwingOrientations = async () => {
+  const response = await api.get('/api/frames/swing-orientations')
+  return response.data
+}
+
 export const generateDrawing = async (parameters: DrawingParameters): Promise<DrawingResponse> => {
   const response = await api.post<DrawingResponse>('/api/drawings/generate', parameters)
   return response.data

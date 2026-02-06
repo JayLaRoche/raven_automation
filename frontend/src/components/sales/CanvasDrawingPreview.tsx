@@ -4,10 +4,13 @@ import WindowElevationView from '../WindowElevationView'
 import { useDrawingStore } from '../../store/drawingStore'
 import { saveDrawing } from '../../services/api'
 
+// Get API URL from environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
 // Function to map product type and swing orientation to plan view image URL
 const getPlanViewUrl = (product: string | undefined, swing: string | undefined) => {
   if (!product) return null
-  const baseUrl = 'http://localhost:8000/static/O-Icon_library'
+  const baseUrl = `${API_URL}/static/O-Icon_library`
   
   // 1. Sliding Doors & Windows (Map to the 2-panel slider image)
   if ([
