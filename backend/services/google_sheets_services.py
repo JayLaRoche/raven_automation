@@ -14,25 +14,53 @@ class GoogleSheetsService:
         self.credentials_path = os.getenv("GOOGLE_SHEETS_CREDENTIALS_PATH")
         self.sheet_id = os.getenv("GOOGLE_SHEET_ID")
         self.sheet_name = os.getenv("GOOGLE_SHEET_NAME", "Sheet1")
+        self.client = None
+        self.spreadsheet = None
+        self._initialized = False
         
         if not self.credentials_path or not self.sheet_id:
-            raise ValueError("Missing Google Sheets configuration in .env")
+            import logging
+            logging.getLogger(__name__).warning(
+                "Google Sheets not configured - set GOOGLE_SHEETS_CREDENTIALS_PATH and GOOGLE_SHEET_ID in environment"
+            )
+            return
         
-        # Define the scope
-        scopes = [
-            'https://www.googleapis.com/auth/spreadsheets.readonly',
-        ]
+        # Check if credentials file exists
+        if not os.path.exists(self.credentials_path):
+            import logging
+            logging.getLogger(__name__).warning(
+                f"Google Sheets credentials file not found: {self.credentials_path}"
+            )
+            return
         
-        # Authenticate
-        creds = Credentials.from_service_account_file(
-            self.credentials_path,
-            scopes=scopes
-        )
-        self.client = gspread.authorize(creds)
-        self.spreadsheet = self.client.open_by_key(self.sheet_id)
+        try:
+            # Define the scope
+            scopes = [
+                'https://www.googleapis.com/auth/spreadsheets.readonly',
+            ]
+            
+            # Authenticate
+            creds = Credentials.from_service_account_file(
+                self.credentials_path,
+                scopes=scopes
+            )
+            self.client = gspread.authorize(creds)
+            self.spreadsheet = self.client.open_by_key(self.sheet_id)
+            self._initialized = True
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(
+                f"Failed to initialize Google Sheets client: {str(e)}"
+            )
+    
+    def is_available(self) -> bool:
+        """Check if Google Sheets integration is available"""
+        return self._initialized
     
     def get_worksheet(self, name: str = None):
         """Get a specific worksheet or the default one"""
+        if not self._initialized:
+            raise RuntimeError("Google Sheets service not initialized - check credentials and configuration")
         if name:
             return self.spreadsheet.worksheet(name)
         return self.spreadsheet.worksheet(self.sheet_name)

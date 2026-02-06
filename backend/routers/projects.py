@@ -3,8 +3,21 @@ from sqlalchemy.orm import Session
 from typing import List
 from pydantic import BaseModel
 from app.database import get_db
-from services.google_sheets_services import get_sheets_service
-from services.sync_services import SyncService
+
+# Optional imports - gracefully handle missing services
+try:
+    from services.google_sheets_services import get_sheets_service
+    GOOGLE_SHEETS_AVAILABLE = True
+except ImportError:
+    GOOGLE_SHEETS_AVAILABLE = False
+    get_sheets_service = lambda: None
+
+try:
+    from services.sync_services import SyncService
+    SYNC_SERVICE_AVAILABLE = True
+except ImportError:
+    SYNC_SERVICE_AVAILABLE = False
+    SyncService = None
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 

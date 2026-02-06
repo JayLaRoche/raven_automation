@@ -15,9 +15,28 @@ import base64
 
 from app.database import get_db
 from app.models import Project, Window, Door, Unit, Drawing
-from services.google_sheets_services import get_sheets_service
-from app.services.integrated_drawing_service import get_drawing_service
-from services.reference_shop_drawing_generator import ReferenceShopDrawingGenerator
+
+# Optional imports - gracefully handle missing services
+try:
+    from services.google_sheets_services import get_sheets_service
+    GOOGLE_SHEETS_AVAILABLE = True
+except ImportError:
+    GOOGLE_SHEETS_AVAILABLE = False
+    get_sheets_service = lambda: None
+
+try:
+    from app.services.integrated_drawing_service import get_drawing_service
+    DRAWING_SERVICE_AVAILABLE = True
+except ImportError:
+    DRAWING_SERVICE_AVAILABLE = False
+    get_drawing_service = lambda: None
+
+try:
+    from services.reference_shop_drawing_generator import ReferenceShopDrawingGenerator
+    REFERENCE_GENERATOR_AVAILABLE = True
+except ImportError:
+    REFERENCE_GENERATOR_AVAILABLE = False
+    ReferenceShopDrawingGenerator = None
 
 router = APIRouter(prefix="/api/drawings", tags=["drawings"])
 
