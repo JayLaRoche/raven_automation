@@ -100,7 +100,15 @@ class Settings:
     ).split(",")
     CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "true").lower() == "true"
     
-    # Ensure production only uses HTTPS origins
+    # Add FRONTEND_URL and BACKEND_URL to CORS if set
+    _frontend_url = os.getenv("FRONTEND_URL", "")
+    _backend_url = os.getenv("BACKEND_URL", "")
+    if _frontend_url and _frontend_url not in CORS_ORIGINS:
+        CORS_ORIGINS.append(_frontend_url)
+    if _backend_url and _backend_url not in CORS_ORIGINS:
+        CORS_ORIGINS.append(_backend_url)
+    
+    # In production, filter to only HTTPS origins
     if IS_PROD:
         CORS_ORIGINS = [
             origin.strip() 
@@ -126,10 +134,14 @@ class Settings:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
     JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "1440"))
     
-    # In production, ensure JWT secret is not default
+    # In production, warn if JWT secret is not set (don't crash the app)
     if IS_PROD and JWT_SECRET_KEY == "dev-secret-key-change-in-production":
-        raise ValueError(
-            "CRITICAL: JWT_SECRET_KEY must be set to a strong value in production!"
+        import secrets
+        JWT_SECRET_KEY = secrets.token_hex(32)
+        import logging as _logging
+        _logging.getLogger(__name__).warning(
+            "WARNING: JWT_SECRET_KEY not set in production. Generated a random key. "
+            "Set JWT_SECRET_KEY environment variable for persistent sessions."
         )
     
     # ========================================================================

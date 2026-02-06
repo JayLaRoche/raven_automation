@@ -11,6 +11,10 @@ load_dotenv()
 # DATABASE_URL can be overridden via environment variables
 DATABASE_URL = settings.DATABASE_URL
 
+# Render.com uses postgres:// but SQLAlchemy 2.x requires postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Create engine with appropriate settings based on environment
 if "postgresql" in DATABASE_URL:
     engine = create_engine(

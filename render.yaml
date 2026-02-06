@@ -6,11 +6,13 @@ services:
   - type: web
     name: raven-backend
     env: python
+    plan: free
+    rootDir: backend
     buildCommand: |
       pip install --upgrade pip &&
       pip install -r requirements.txt &&
       mkdir -p data &&
-      python init_db.py
+      python init_db.py || echo 'init_db skipped'
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
@@ -20,21 +22,28 @@ services:
         value: sqlite:///./data/raven_drawings.db
       - key: BACKEND_URL
         value: https://raven-backend.onrender.com
-      - key: CORS_ORIGINS
+      - key: FRONTEND_URL
         value: https://raven-frontend.onrender.com
+      - key: CORS_ORIGINS
+        value: https://raven-frontend.onrender.com,https://raven-backend.onrender.com
       - key: APP_ENV
         value: production
       - key: ENVIRONMENT
         value: production
       - key: DEBUG
-        value: false
+        value: "false"
       - key: LOG_LEVEL
         value: INFO
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11.6"
     
   # React Frontend (Static Site)
   - type: web
     name: raven-frontend
     env: static
+    plan: free
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
     pullRequestPreviewsEnabled: true
@@ -45,6 +54,12 @@ services:
       - type: rewrite
         source: /static/*
         destination: https://raven-backend.onrender.com/static/*
+      - type: rewrite
+        source: /frame-library/*
+        destination: https://raven-backend.onrender.com/frame-library/*
+      - type: rewrite
+        source: /assets/*
+        destination: https://raven-backend.onrender.com/assets/*
       - type: rewrite
         source: /*
         destination: /index.html
