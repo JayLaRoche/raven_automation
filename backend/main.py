@@ -102,7 +102,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for Docker healthcheck"""
+    """Health check endpoint for Render and Docker"""
     from datetime import datetime
     from app.database import SessionLocal
     from sqlalchemy import text
@@ -110,7 +110,9 @@ async def health_check():
     health_status = {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "database": "unknown"
+        "database": "unknown",
+        "environment": os.getenv("APP_ENV", "development"),
+        "port": os.getenv("PORT", "8000"),
     }
     
     # Check database connectivity
@@ -128,4 +130,7 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    # Use 0.0.0.0 to allow external connections (required by Render)
+    # Read PORT from environment (Render sets this dynamically)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")

@@ -82,7 +82,8 @@ class Settings:
     # ========================================================================
     
     BACKEND_HOST = os.getenv("BACKEND_HOST", "0.0.0.0")
-    BACKEND_PORT = int(os.getenv("BACKEND_PORT", "8000"))
+    # IMPORTANT: Render sets PORT dynamically - must read from env
+    BACKEND_PORT = int(os.getenv("PORT", os.getenv("BACKEND_PORT", "8000")))
     BACKEND_RELOAD = os.getenv("BACKEND_RELOAD", "true").lower() == "true"
     
     # Debug mode (disable in production!)
