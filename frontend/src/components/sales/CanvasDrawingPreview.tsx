@@ -220,11 +220,10 @@ export const CanvasDrawingPreview = ({ parameters, selectedFrameView = 'head', o
     const cleanSeries = parameters.series.replace(/Series\s*/i, '').trim()
 
     // Construct image URLs with ABSOLUTE paths pointing to backend server
-    const backendUrl = 'http://localhost:8000'
     setFrameImageUrls({
-      head: `${backendUrl}/static/frames/series_${cleanSeries}_HEAD.png`,
-      sill: `${backendUrl}/static/frames/series_${cleanSeries}_SILL.png`,
-      jamb: `${backendUrl}/static/frames/series_${cleanSeries}_JAMB.png`,
+      head: `${API_URL}/static/frames/series_${cleanSeries}_HEAD.png`,
+      sill: `${API_URL}/static/frames/series_${cleanSeries}_SILL.png`,
+      jamb: `${API_URL}/static/frames/series_${cleanSeries}_JAMB.png`,
     })
   }, [parameters?.series])
 
@@ -237,7 +236,7 @@ export const CanvasDrawingPreview = ({ parameters, selectedFrameView = 'head', o
 
     // Convert productType to slug format (lowercase, spaces to hyphens)
     const slug = parameters.productType.toLowerCase().replace(/\s+/g, '-')
-    const imageUrl = `http://localhost:8000/static/products/${slug}.jpg`
+    const imageUrl = `${API_URL}/static/products/${slug}.jpg`
 
     const img = new Image()
     img.crossOrigin = 'anonymous'

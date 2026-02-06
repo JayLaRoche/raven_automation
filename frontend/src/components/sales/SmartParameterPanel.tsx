@@ -91,7 +91,7 @@ export function SmartParameterPanel() {
     setIsSyncing(true)
     setSyncMessage(null)
     try {
-      const response = await fetch('http://localhost:8000/api/frames/sync-now', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/frames/sync-now`, {
         method: 'POST',
       })
       const data = await response.json()
@@ -181,7 +181,7 @@ export function SmartParameterPanel() {
                     const cleanSeries = parameters.series?.toString().replace(/Series\s*/i, '').trim() || '';
                     
                     // 2. Construct FULL URL with hyphen format (matches backend naming convention)
-                    const imageUrl = `http://localhost:8000/static/frames/series-${cleanSeries}-${view.toLowerCase()}.png`;
+                    const imageUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/static/frames/series-${cleanSeries}-${view.toLowerCase()}.png`;
 
                     return (
                       <div key={view} className="flex flex-col items-center group">

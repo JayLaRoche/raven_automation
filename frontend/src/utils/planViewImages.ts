@@ -2,11 +2,12 @@
  * Plan View Image Mapping Utility
  * Maps product types and configurations to exact O-Icon_library filenames
  * 
- * Images are served from: http://localhost:8000/static/O-Icon_library/
+ * Images are served from: {VITE_API_URL}/static/O-Icon_library/
  * IMPORTANT: Filenames use uppercase .PNG extension
  */
 
-const BASE_URL = 'http://localhost:8000/static/O-Icon_library';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const BASE_URL = `${API_URL}/static/O-Icon_library`;
 
 /**
  * Get the Plan View image URL for a given product type and configuration

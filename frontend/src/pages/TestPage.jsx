@@ -9,8 +9,8 @@ export default function TestPage() {
       </p>
       <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
         <h2>Debug Info:</h2>
-        <p>Frontend: http://localhost:3000 ✅</p>
-        <p>Backend: http://localhost:8000</p>
+        <p>Frontend: {window.location.origin} ✅</p>
+        <p>Backend: {import.meta.env.VITE_API_URL || 'http://localhost:8000'}</p>
         <p>React loaded at: {new Date().toLocaleTimeString()}</p>
       </div>
     </div>
