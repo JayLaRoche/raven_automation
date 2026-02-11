@@ -786,7 +786,7 @@ export const CanvasDrawingPreview = ({ parameters, selectedFrameView = 'head', o
   )
 
   const renderCanvasWithOverlays = () => (
-    <div 
+    <div id="drawing-preview-container"
       style={{
         position: 'relative',
         width: '100%',
@@ -912,7 +912,7 @@ export const CanvasDrawingPreview = ({ parameters, selectedFrameView = 'head', o
         padding: '20px',
       }}
     >
-      <div style={{ 
+      <div id="drawing-preview-container" style={{ 
         position: 'relative',
         maxWidth: '100%',
         maxHeight: '100%',

@@ -339,16 +339,33 @@ export function SalesPresentation() {
             
             <div className="space-y-3 mb-6">
               <button
-                onClick={() => {
-                  const canvas = document.querySelector('canvas')
-                  if (canvas instanceof HTMLCanvasElement) {
+                onClick={async () => {
+                  try {
+                    // Capture the full drawing container (canvas + SVG overlays)
+                    const container = document.getElementById('drawing-preview-container') || document.querySelector('canvas')?.parentElement
+                    if (!container) {
+                      toast.error('Drawing container not found')
+                      return
+                    }
+
+                    const captured = await html2canvas(container as HTMLElement, {
+                      backgroundColor: '#ffffff',
+                      scale: 2,
+                      useCORS: true,
+                      logging: false,
+                    })
+
+                    const dataUrl = captured.toDataURL('image/png', 1)
                     const link = document.createElement('a')
                     const timestamp = new Date().toISOString().split('T')[0]
                     link.download = `${parameters.poNumber || 'drawing'}_${parameters.itemNumber || 'item'}_${timestamp}.png`
-                    link.href = canvas.toDataURL()
+                    link.href = dataUrl
                     link.click()
                     toast.success('PNG exported successfully!')
                     setShowExportModal(false)
+                  } catch (err) {
+                    console.error('PNG export error:', err)
+                    toast.error('Failed to export PNG')
                   }
                 }}
                 className="w-full p-4 text-left rounded-lg border border-raven-border-light hover:bg-raven-bg-secondary transition-colors hover:shadow-sm"

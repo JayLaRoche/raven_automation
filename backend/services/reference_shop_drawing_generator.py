@@ -10,6 +10,9 @@ import io
 import base64
 import logging
 from typing import Dict, Optional
+import os
+import matplotlib.image as mpimg
+from matplotlib.patches import Rectangle, Circle
 
 from reportlab.lib.pagesizes import landscape, A4
 from reportlab.pdfgen import canvas as rl_canvas
@@ -382,6 +385,56 @@ class ReferenceShopDrawingGenerator:
                    fontsize=5, ha='center', style='italic', va='top',
                    bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.8))
                    
+            # Attempt to load a plan-view icon from static/plan_views based on product/config
+            try:
+                product = (self.params.get('productType') or '').strip()
+                swing = (self.params.get('swingOrientation') or self.params.get('configuration') or '').strip()
+                static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'static', 'plan_views'))
+
+                def candidate_names(prod, swing_val):
+                    prod_lower = (prod or '').lower()
+                    swing_lower = (swing_val or '').lower()
+                    names = []
+                    # Sliding
+                    if 'slid' in prod_lower or 'slider' in prod_lower:
+                        names += ['slider_2panel.png', 'D-2_Panel_Slider.PNG']
+                    # Casement / Hinged
+                    if 'casement' in prod_lower or 'hinged' in prod_lower or 'door' in prod_lower:
+                        if 'left' in swing_lower:
+                            names += ['casement_left.png', 'D-Hinged_Door_IN_L.PNG']
+                        if 'right' in swing_lower:
+                            names += ['casement_right.png', 'D-Hinged_Door_IN_R.PNG']
+                        # Outswing variants
+                        if 'outswing' in swing_lower or 'out' in swing_lower:
+                            names += ['casement_out_left.png', 'D-Hinged_Door_OUT_L.PNG', 'casement_out_right.png', 'D-Hinged_Door_OUT_R.PNG']
+                    # Fixed window
+                    if 'fixed' in prod_lower:
+                        names += ['window_fixed.png', 'W-Fixed_O.PNG']
+                    # Fallbacks
+                    names += ['plan_slider.png', 'plan_casement.png', 'plan_default.png']
+                    return names
+
+                found = None
+                for fname in candidate_names(product, swing):
+                    candidate = os.path.join(static_dir, fname)
+                    if os.path.exists(candidate):
+                        found = candidate
+                        break
+
+                if found:
+                    try:
+                        img = mpimg.imread(found)
+                        # Compute extent for imshow: left, right, bottom, top
+                        left = x + plan_margin
+                        bottom = y - height + 3
+                        right = left + plan_width
+                        top = bottom + plan_height - 2
+                        ax.imshow(img, extent=(left, right, bottom, top), aspect='auto', zorder=10)
+                    except Exception as img_err:
+                        logger.warning(f"Failed to render plan view image '{found}': {img_err}")
+            except Exception:
+                # Non-fatal - continue without plan icon
+                pass
         except Exception as e:
             logger.error(f"Error in _draw_plan_view: {str(e)}", exc_info=True)
             raise
